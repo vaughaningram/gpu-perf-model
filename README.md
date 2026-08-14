@@ -54,6 +54,9 @@ docs/         Methodology and technical analysis
 tests/        Automated correctness tests
 ```
 
+The canonical local-development and Tufts Pax execution workflow is documented
+in [`docs/environment.md`](docs/environment.md).
+
 ## Scope
 
 This is intentionally not a cycle-accurate GPU simulator, CUDA compiler, RTL
