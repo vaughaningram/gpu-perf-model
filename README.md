@@ -19,6 +19,11 @@ The project follows one repeated loop:
 Prediction comes before profiling. The objective is architectural reasoning and
 model-to-hardware correlation, not simply producing fast CUDA kernels.
 
+Data-movement estimates explicitly distinguish the algorithmic minimum from
+traffic implied by an actual kernel. Comparisons with profiler measurements will
+name the relevant cache or DRAM level. Occupancy is treated as a constraint and
+diagnostic—not as a target to maximize.
+
 ## Current milestone: M0 — Experimental foundation
 
 The first milestone establishes a trustworthy baseline:
@@ -60,4 +65,3 @@ analysis rather than code volume.
 
 The project is currently being scaffolded. Build and run instructions will be
 added as the M0 implementation establishes the supported CUDA environment.
-

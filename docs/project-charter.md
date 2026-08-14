@@ -42,4 +42,31 @@ matrices of dimensions `M × K` and `K × N`.
 - Treat model error as evidence to investigate.
 - Avoid blind tuning and unexplained optimization.
 - Do not add a conceptual layer until the current one is understood.
+- Distinguish the algorithmic minimum data movement from the traffic implied by
+  a particular kernel's memory-access pattern. Arithmetic intensity must name
+  which traffic model it uses.
+- Treat occupancy as a resource constraint and diagnostic, not an optimization
+  target. Higher occupancy does not inherently imply higher performance.
+- When comparing estimated and measured traffic, identify the memory-hierarchy
+  level represented by both the estimate and the profiler metric (for example,
+  DRAM rather than cache traffic).
+- Keep accelerator sensitivity analysis lightweight and parameterized around
+  compute throughput, bandwidth, and selected resource limits; do not invent a
+  pseudo-accelerator architecture.
+- Keep convolution optional until the GEMM modeling and correlation study are
+  strong.
 
+## Data-movement terminology
+
+The project will not use a single ambiguous "bytes moved" quantity. At minimum,
+analysis should distinguish:
+
+- **Algorithmic-minimum traffic:** idealized compulsory movement required by the
+  mathematical operation under stated assumptions.
+- **Kernel-implied traffic:** movement requested by the implementation's load and
+  store pattern before cache-hierarchy effects are considered.
+- **Measured traffic:** traffic reported at a named hardware level by a specific
+  profiler metric.
+
+These quantities answer different questions and must not be substituted for one
+another without explanation.
