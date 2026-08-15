@@ -61,6 +61,20 @@ if(GPU_PERF_ENABLE_CUDA)
             src/benchmark/naive_gemm_benchmark.cpp
         )
         target_link_libraries(naive_gemm_benchmark PRIVATE gpu_perf_cuda)
+
+        execute_process(
+            COMMAND git rev-parse --short HEAD
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            OUTPUT_VARIABLE GPU_PERF_GIT_COMMIT
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+        if(NOT GPU_PERF_GIT_COMMIT)
+            set(GPU_PERF_GIT_COMMIT "unknown")
+        endif()
+        target_compile_definitions(naive_gemm_benchmark PRIVATE
+            GPU_PERF_GIT_COMMIT="${GPU_PERF_GIT_COMMIT}"
+        )
     else()
         message(STATUS "CUDA compiler not found; building CPU-only components")
     endif()

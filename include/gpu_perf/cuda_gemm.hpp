@@ -3,6 +3,7 @@
 #include "gpu_perf/matrix.hpp"
 
 #include <cstddef>
+#include <string>
 
 namespace gpu_perf {
 
@@ -18,6 +19,18 @@ struct CudaGemmBenchmarkResult {
     float average_kernel_time_ms{0.0F};
     double achieved_gflops{0.0};
 };
+
+struct CudaDeviceMetadata {
+    std::string name;
+    int compute_capability_major{0};
+    int compute_capability_minor{0};
+    std::size_t global_memory_bytes{0};
+    int multiprocessor_count{0};
+    int driver_version{0};
+    int runtime_version{0};
+};
+
+[[nodiscard]] CudaDeviceMetadata current_cuda_device_metadata();
 
 // Copies inputs once, runs untimed warmups, and uses CUDA events to time only
 // repeated kernel executions. The result is copied to the host after timing.

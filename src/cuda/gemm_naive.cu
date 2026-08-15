@@ -164,6 +164,30 @@ Matrix gemm_cuda_naive(const Matrix& a, const Matrix& b) {
     return c;
 }
 
+CudaDeviceMetadata current_cuda_device_metadata() {
+    int device = 0;
+    require_cuda_success(cudaGetDevice(&device), "cudaGetDevice");
+
+    cudaDeviceProp properties{};
+    require_cuda_success(
+        cudaGetDeviceProperties(&properties, device),
+        "cudaGetDeviceProperties");
+
+    CudaDeviceMetadata metadata;
+    metadata.name = properties.name;
+    metadata.compute_capability_major = properties.major;
+    metadata.compute_capability_minor = properties.minor;
+    metadata.global_memory_bytes = properties.totalGlobalMem;
+    metadata.multiprocessor_count = properties.multiProcessorCount;
+    require_cuda_success(
+        cudaDriverGetVersion(&metadata.driver_version),
+        "cudaDriverGetVersion");
+    require_cuda_success(
+        cudaRuntimeGetVersion(&metadata.runtime_version),
+        "cudaRuntimeGetVersion");
+    return metadata;
+}
+
 CudaGemmBenchmarkResult benchmark_cuda_naive(
     const Matrix& a,
     const Matrix& b,

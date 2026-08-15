@@ -76,6 +76,16 @@ void test_event_timed_benchmark() {
         "timed benchmark output disagreed with CPU reference");
 }
 
+void test_device_metadata() {
+    const auto metadata = gpu_perf::current_cuda_device_metadata();
+    require(!metadata.name.empty(), "CUDA device metadata has no name");
+    require(metadata.compute_capability_major > 0, "invalid CUDA compute capability");
+    require(metadata.global_memory_bytes > 0, "CUDA device metadata has no memory");
+    require(metadata.multiprocessor_count > 0, "CUDA device metadata has no SMs");
+    require(metadata.driver_version > 0, "CUDA driver version is unavailable");
+    require(metadata.runtime_version > 0, "CUDA runtime version is unavailable");
+}
+
 }  // namespace
 
 int main() {
@@ -86,6 +96,7 @@ int main() {
         require_gpu_matches_cpu(1, 37, 29, 5U, 6U);
         test_invalid_dimensions();
         test_event_timed_benchmark();
+        test_device_metadata();
     } catch (const std::exception& error) {
         std::cerr << "Naive CUDA correctness test failure: " << error.what() << '\n';
         return EXIT_FAILURE;
