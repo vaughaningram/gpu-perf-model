@@ -37,10 +37,6 @@ public:
         return data_;
     }
 
-    [[nodiscard]] const float* data() const noexcept {
-        return data_;
-    }
-
 private:
     float* data_{nullptr};
 };
@@ -125,4 +121,3 @@ Matrix gemm_cuda_naive(const Matrix& a, const Matrix& b) {
 }
 
 }  // namespace gpu_perf
-
