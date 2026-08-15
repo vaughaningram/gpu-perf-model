@@ -60,6 +60,22 @@ void test_invalid_dimensions() {
     require(threw, "naive CUDA GEMM accepted incompatible dimensions");
 }
 
+void test_event_timed_benchmark() {
+    const auto a = gpu_perf::make_deterministic_matrix(32, 17, 7U);
+    const auto b = gpu_perf::make_deterministic_matrix(17, 24, 8U);
+    const auto expected = gpu_perf::gemm_cpu_reference(a, b);
+    const auto benchmark = gpu_perf::benchmark_cuda_naive(a, b, 2, 3);
+
+    require(benchmark.warmup_iterations == 2, "benchmark lost the warmup count");
+    require(benchmark.measured_iterations == 3, "benchmark lost the measured count");
+    require(benchmark.total_kernel_time_ms > 0.0F, "benchmark reported no total time");
+    require(benchmark.average_kernel_time_ms > 0.0F, "benchmark reported no average time");
+    require(benchmark.achieved_gflops > 0.0, "benchmark reported no throughput");
+    require(
+        gpu_perf::compare_matrices(expected, benchmark.output, 1.0e-4F, 1.0e-4F).passed,
+        "timed benchmark output disagreed with CPU reference");
+}
+
 }  // namespace
 
 int main() {
@@ -69,6 +85,7 @@ int main() {
         require_gpu_matches_cpu(19, 13, 7, 3U, 4U);
         require_gpu_matches_cpu(1, 37, 29, 5U, 6U);
         test_invalid_dimensions();
+        test_event_timed_benchmark();
     } catch (const std::exception& error) {
         std::cerr << "Naive CUDA correctness test failure: " << error.what() << '\n';
         return EXIT_FAILURE;
@@ -77,4 +94,3 @@ int main() {
     std::cout << "All naive CUDA correctness tests passed.\n";
     return EXIT_SUCCESS;
 }
-

@@ -56,6 +56,11 @@ if(GPU_PERF_ENABLE_CUDA)
         set_target_properties(gpu_perf_cuda PROPERTIES
             CUDA_ARCHITECTURES "${GPU_PERF_CUDA_ARCHITECTURES}"
         )
+
+        add_executable(naive_gemm_benchmark
+            src/benchmark/naive_gemm_benchmark.cpp
+        )
+        target_link_libraries(naive_gemm_benchmark PRIVATE gpu_perf_cuda)
     else()
         message(STATUS "CUDA compiler not found; building CPU-only components")
     endif()
