@@ -34,8 +34,16 @@ if(GPU_PERF_ENABLE_CUDA)
         set(CMAKE_CUDA_STANDARD 17)
         set(CMAKE_CUDA_STANDARD_REQUIRED ON)
         set(CMAKE_CUDA_EXTENSIONS OFF)
+        set(GPU_PERF_CUDA_ARCHITECTURES "80" CACHE STRING
+            "CUDA architectures to compile for (80 targets the canonical A100)")
         message(STATUS "CUDA compiler found: ${CMAKE_CUDA_COMPILER}")
-        # CUDA targets will be introduced after the Pax environment inventory.
+
+        add_executable(gpu_device_info
+            src/cuda/device_info.cu
+        )
+        set_target_properties(gpu_device_info PROPERTIES
+            CUDA_ARCHITECTURES "${GPU_PERF_CUDA_ARCHITECTURES}"
+        )
     else()
         message(STATUS "CUDA compiler not found; building CPU-only components")
     endif()
@@ -58,4 +66,3 @@ if(GPU_PERF_BUILD_TESTS)
 
     add_test(NAME cpu_reference_tests COMMAND cpu_reference_tests)
 endif()
-

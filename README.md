@@ -28,9 +28,9 @@ diagnostic—not as a target to maximize.
 
 The first milestone establishes a trustworthy baseline:
 
-- [ ] Confirm the CUDA development and execution environment
+- [x] Confirm the CUDA development and execution environment
 - [ ] Implement a simple FP32 GEMM kernel
-- [ ] Add a CPU correctness reference
+- [x] Add a CPU correctness reference
 - [ ] Add CUDA-event timing, warmups, and repeated trials
 - [ ] Calculate achieved GFLOP/s
 - [ ] Emit structured benchmark results

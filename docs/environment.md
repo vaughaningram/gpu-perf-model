@@ -48,6 +48,24 @@ The upgraded Pax cluster is accessible through:
 Off-campus access may require the Tufts VPN. SSH access also requires an active
 HPC account and may require two-factor authentication.
 
+### Verified canonical environment
+
+Inventory completed on 2026-08-15 using an interactive Slurm allocation:
+
+- Compute node during inventory: `pax143`
+- GPU: NVIDIA A100 PCIe 40 GB
+- Driver: 575.57.08
+- Driver-reported CUDA compatibility: 12.9
+- CUDA module: `cuda/12.9.0`
+- NVCC: 12.9.41
+- Host compiler modules: `gcc/12.4.0` and `g++/12.4.0`
+- CMake module: `cmake/3.31.6`
+- Nsight Compute CLI: 2025.4.0.0, provided by the CUDA module
+
+The initial CMake configuration detected both GNU C++ 12.4.0 and NVIDIA CUDA
+12.9.41. The CPU reference library and tests compiled successfully, and the
+first CTest run passed on this environment.
+
 From Windows Terminal or PowerShell:
 
 ```powershell
@@ -144,10 +162,10 @@ M0 may use any modern assigned NVIDIA GPU to establish compilation,
 correctness, timing, and result-output infrastructure. Every result must record
 the actual GPU model and software environment.
 
-Before M1 correlation measurements begin, the project will select one primary
-GPU configuration and request it consistently. An A100 is a plausible candidate
-because it is documented as available on Pax, but that choice remains deferred
-until availability and the first inventory are confirmed.
+The NVIDIA A100 PCIe 40 GB is the primary experimental target. M1 and later
+correlation measurements should request this GPU configuration consistently.
+M0 bring-up may still use another GPU when the result is clearly labeled and is
+not mixed into the primary performance dataset.
 
 Cross-architecture comparisons are optional later work. They must not introduce
 uncontrolled hardware variation into the primary result set.
@@ -175,4 +193,3 @@ methodology is designed; they are not silently assumed during M0 bring-up.
 - [Tufts cluster login](https://rtguides.it.tufts.edu/hpc/access/20-cli.html)
 - [Tufts upgraded cluster](https://rtguides.it.tufts.edu/hpc/examples/new-cluster.html)
 - [Tufts GPU resources](https://rtguides.it.tufts.edu/hpc/compute/gpu.html)
-
