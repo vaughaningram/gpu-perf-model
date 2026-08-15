@@ -1,12 +1,61 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(gpu_perf_model LANGUAGES CXX CUDA)
+project(gpu_perf_model LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CUDA_STANDARD 17)
-set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Executable and test targets will be added with the first M0 implementation.
+option(GPU_PERF_ENABLE_CUDA "Build CUDA components when a CUDA compiler is available" ON)
+option(GPU_PERF_BUILD_TESTS "Build project tests" ON)
+
+add_library(gpu_perf_reference
+    src/reference/gemm_cpu.cpp
+)
+
+target_include_directories(gpu_perf_reference
+    PUBLIC
+        ${PROJECT_SOURCE_DIR}/include
+)
+
+if(MSVC)
+    target_compile_options(gpu_perf_reference PRIVATE /W4 /permissive-)
+else()
+    target_compile_options(gpu_perf_reference PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+if(GPU_PERF_ENABLE_CUDA)
+    include(CheckLanguage)
+    check_language(CUDA)
+
+    if(CMAKE_CUDA_COMPILER)
+        enable_language(CUDA)
+        set(CMAKE_CUDA_STANDARD 17)
+        set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+        set(CMAKE_CUDA_EXTENSIONS OFF)
+        message(STATUS "CUDA compiler found: ${CMAKE_CUDA_COMPILER}")
+        # CUDA targets will be introduced after the Pax environment inventory.
+    else()
+        message(STATUS "CUDA compiler not found; building CPU-only components")
+    endif()
+endif()
+
+if(GPU_PERF_BUILD_TESTS)
+    enable_testing()
+
+    add_executable(cpu_reference_tests
+        tests/test_cpu_reference.cpp
+    )
+
+    target_link_libraries(cpu_reference_tests PRIVATE gpu_perf_reference)
+
+    if(MSVC)
+        target_compile_options(cpu_reference_tests PRIVATE /W4 /permissive-)
+    else()
+        target_compile_options(cpu_reference_tests PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+
+    add_test(NAME cpu_reference_tests COMMAND cpu_reference_tests)
+endif()
 

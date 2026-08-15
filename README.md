@@ -64,7 +64,22 @@ accelerator, cuBLAS competitor, or blind autotuning project. Its sophistication
 should come from defensible assumptions, controlled experiments, and careful
 analysis rather than code volume.
 
-## Build status
+## Build and test
 
-The project is currently being scaffolded. Build and run instructions will be
-added as the M0 implementation establishes the supported CUDA environment.
+The first M0 increment contains a portable C++ matrix representation, a simple
+CPU reference GEMM, deterministic input generation, numerical comparison logic,
+and dependency-free correctness tests. CUDA targets will be added after the Pax
+toolchain inventory.
+
+Configure a CPU-only build with:
+
+```bash
+cmake -S . -B build -DGPU_PERF_ENABLE_CUDA=OFF
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+The same project can detect and enable CUDA when a CUDA compiler is available.
+These commands have not yet been executed on the local Windows machine because
+it currently lacks CMake and a C++ compiler; the first Pax build will provide
+the initial compilation evidence.
