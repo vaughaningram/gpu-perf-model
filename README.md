@@ -31,8 +31,8 @@ The first milestone establishes a trustworthy baseline:
 - [x] Confirm the CUDA development and execution environment
 - [x] Implement a simple FP32 GEMM kernel
 - [x] Add a CPU correctness reference
-- [ ] Add CUDA-event timing, warmups, and repeated trials
-- [ ] Calculate achieved GFLOP/s
+- [x] Add CUDA-event timing, warmups, and repeated trials
+- [x] Calculate achieved GFLOP/s
 - [ ] Emit structured benchmark results
 - [ ] Sweep several matrix sizes
 - [ ] Document the naive kernel's memory behavior
