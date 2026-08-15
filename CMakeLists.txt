@@ -44,6 +44,18 @@ if(GPU_PERF_ENABLE_CUDA)
         set_target_properties(gpu_device_info PROPERTIES
             CUDA_ARCHITECTURES "${GPU_PERF_CUDA_ARCHITECTURES}"
         )
+
+        add_library(gpu_perf_cuda
+            src/cuda/gemm_naive.cu
+        )
+        target_include_directories(gpu_perf_cuda
+            PUBLIC
+                ${PROJECT_SOURCE_DIR}/include
+        )
+        target_link_libraries(gpu_perf_cuda PUBLIC gpu_perf_reference)
+        set_target_properties(gpu_perf_cuda PROPERTIES
+            CUDA_ARCHITECTURES "${GPU_PERF_CUDA_ARCHITECTURES}"
+        )
     else()
         message(STATUS "CUDA compiler not found; building CPU-only components")
     endif()
@@ -65,4 +77,15 @@ if(GPU_PERF_BUILD_TESTS)
     endif()
 
     add_test(NAME cpu_reference_tests COMMAND cpu_reference_tests)
+
+    if(CMAKE_CUDA_COMPILER)
+        add_executable(cuda_naive_correctness_tests
+            tests/test_naive_cuda.cu
+        )
+        target_link_libraries(cuda_naive_correctness_tests PRIVATE gpu_perf_cuda)
+        set_target_properties(cuda_naive_correctness_tests PROPERTIES
+            CUDA_ARCHITECTURES "${GPU_PERF_CUDA_ARCHITECTURES}"
+        )
+        add_test(NAME cuda_naive_correctness_tests COMMAND cuda_naive_correctness_tests)
+    endif()
 endif()
