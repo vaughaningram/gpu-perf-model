@@ -162,10 +162,21 @@ M0 may use any modern assigned NVIDIA GPU to establish compilation,
 correctness, timing, and result-output infrastructure. Every result must record
 the actual GPU model and software environment.
 
-The NVIDIA A100 PCIe 40 GB is the primary experimental target. M1 and later
-correlation measurements should request this GPU configuration consistently.
-M0 bring-up may still use another GPU when the result is clearly labeled and is
-not mixed into the primary performance dataset.
+The NVIDIA A100 80 GB PCIe is the primary experimental target. M1 and later
+correlation measurements should request this exact GPU configuration
+consistently. The earlier A100 40 GB and H200 runs are M0 bring-up evidence and
+must not be mixed into the primary performance dataset.
+
+Request the primary target with:
+
+```bash
+srun -p gpu --gres=gpu:a100:1 --constraint=a100-80G \
+    --mem=8g -t 1:00:00 --pty bash
+```
+
+The benchmark also records the assigned GPU model in every result row. Scripts
+for controlled datasets should fail rather than silently accepting a different
+GPU.
 
 Cross-architecture comparisons are optional later work. They must not introduce
 uncontrolled hardware variation into the primary result set.

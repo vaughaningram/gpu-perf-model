@@ -33,7 +33,7 @@ The first milestone establishes a trustworthy baseline:
 - [x] Add a CPU correctness reference
 - [x] Add CUDA-event timing, warmups, and repeated trials
 - [x] Calculate achieved GFLOP/s
-- [ ] Emit structured benchmark results
+- [x] Emit structured benchmark results
 - [ ] Sweep several matrix sizes
 - [ ] Document the naive kernel's memory behavior
 
