@@ -34,8 +34,8 @@ The first milestone establishes a trustworthy baseline:
 - [x] Add CUDA-event timing, warmups, and repeated trials
 - [x] Calculate achieved GFLOP/s
 - [x] Emit structured benchmark results
-- [ ] Sweep several matrix sizes
-- [ ] Document the naive kernel's memory behavior
+- [x] Sweep several matrix sizes
+- [x] Document the naive kernel's memory behavior
 
 Later milestones will add the analytical roofline model, shared-memory tiling,
 resource-aware modeling, controlled tuning, accelerator sensitivity analysis,

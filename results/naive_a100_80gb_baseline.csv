@@ -1,0 +1,6 @@
+schema_version,timestamp_utc,git_commit,hostname,gpu_name,compute_capability,driver_version,cuda_runtime_version,kernel,m,k,n,warmup_iterations,measured_iterations,total_kernel_time_ms,average_kernel_time_ms,achieved_gflops,correctness,mismatched_elements,maximum_absolute_error,maximum_relative_error
+1,2026-08-16T05:14:51Z,8430ea2,pax106,NVIDIA A100 80GB PCIe,8.0,12.9,12.9,naive,128,128,128,5,20,0.193536,0.009677,433.439149,PASS,0,0.000004,0.000468
+1,2026-08-16T05:14:51Z,8430ea2,pax106,NVIDIA A100 80GB PCIe,8.0,12.9,12.9,naive,256,256,256,5,20,0.397312,0.019866,1689.072290,PASS,0,0.000006,0.001131
+1,2026-08-16T05:14:51Z,8430ea2,pax106,NVIDIA A100 80GB PCIe,8.0,12.9,12.9,naive,512,512,512,5,20,2.080768,0.104038,2580.157420,PASS,0,0.000011,1.004078
+1,2026-08-16T05:14:55Z,8430ea2,pax106,NVIDIA A100 80GB PCIe,8.0,12.9,12.9,naive,1024,1024,1024,5,20,14.336000,0.716800,2995.931286,PASS,0,0.000023,0.077344
+1,2026-08-16T05:15:24Z,8430ea2,pax106,NVIDIA A100 80GB PCIe,8.0,12.9,12.9,naive,2048,2048,2048,5,20,113.582077,5.679104,3025.102135,PASS,0,0.000034,3.604833
