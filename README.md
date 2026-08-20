@@ -24,9 +24,9 @@ traffic implied by an actual kernel. Comparisons with profiler measurements will
 name the relevant cache or DRAM level. Occupancy is treated as a constraint and
 diagnostic—not as a target to maximize.
 
-## Current milestone: M0 — Experimental foundation
+## Current milestone: M1 — Roofline model and discrepancy analysis
 
-The first milestone establishes a trustworthy baseline:
+M0 established a trustworthy baseline:
 
 - [x] Confirm the CUDA development and execution environment
 - [x] Implement a simple FP32 GEMM kernel
@@ -37,9 +37,11 @@ The first milestone establishes a trustworthy baseline:
 - [x] Sweep several matrix sizes
 - [x] Document the naive kernel's memory behavior
 
-Later milestones will add the analytical roofline model, shared-memory tiling,
-resource-aware modeling, controlled tuning, accelerator sensitivity analysis,
-2D convolution, and a final prediction-versus-measurement study.
+M1 has frozen analytical roofline predictions and compared them with M0. The
+remaining M1 step is focused profiling to replace traffic assumptions and
+bottleneck hypotheses with measured evidence. The learning checkpoints for all
+milestones are maintained in
+[`docs/milestone-understanding.md`](docs/milestone-understanding.md).
 
 ## Repository layout
 
