@@ -194,6 +194,76 @@ void copy_output_to_host(Matrix& c, DeviceBuffer& device_c) {
         "copy C to host");
 }
 
+using GemmLaunchFunction = void (*)(
+    const float*,
+    const float*,
+    float*,
+    std::size_t,
+    std::size_t,
+    std::size_t);
+
+CudaGemmBenchmarkResult benchmark_cuda(
+    const Matrix& a,
+    const Matrix& b,
+    std::size_t warmup_iterations,
+    std::size_t measured_iterations,
+    GemmLaunchFunction launch) {
+    if (a.columns() != b.rows()) {
+        throw std::invalid_argument("GEMM inner dimensions must match");
+    }
+    if (measured_iterations == 0) {
+        throw std::invalid_argument("measured iteration count must be positive");
+    }
+
+    CudaGemmBenchmarkResult result;
+    result.output = Matrix(a.rows(), b.columns());
+    result.warmup_iterations = warmup_iterations;
+    result.measured_iterations = measured_iterations;
+
+    if (result.output.size() == 0 || a.columns() == 0) {
+        return result;
+    }
+
+    DeviceBuffer device_a(a.size());
+    DeviceBuffer device_b(b.size());
+    DeviceBuffer device_c(result.output.size());
+    copy_inputs_to_device(a, b, device_a, device_b);
+
+    for (std::size_t iteration = 0; iteration < warmup_iterations; ++iteration) {
+        launch(
+            device_a.data(), device_b.data(), device_c.data(),
+            a.rows(), a.columns(), b.columns());
+    }
+    require_cuda_success(cudaDeviceSynchronize(), "complete GEMM warmups");
+
+    CudaEvent start;
+    CudaEvent stop;
+    require_cuda_success(cudaEventRecord(start.get()), "record benchmark start event");
+    for (std::size_t iteration = 0; iteration < measured_iterations; ++iteration) {
+        launch(
+            device_a.data(), device_b.data(), device_c.data(),
+            a.rows(), a.columns(), b.columns());
+    }
+    require_cuda_success(cudaEventRecord(stop.get()), "record benchmark stop event");
+    require_cuda_success(cudaEventSynchronize(stop.get()), "wait for benchmark stop event");
+    require_cuda_success(
+        cudaEventElapsedTime(&result.total_kernel_time_ms, start.get(), stop.get()),
+        "calculate elapsed kernel time");
+
+    result.average_kernel_time_ms =
+        result.total_kernel_time_ms / static_cast<float>(measured_iterations);
+    const long double operations =
+        2.0L * static_cast<long double>(a.rows()) *
+        static_cast<long double>(a.columns()) *
+        static_cast<long double>(b.columns());
+    result.achieved_gflops = static_cast<double>(
+        operations /
+        (static_cast<long double>(result.average_kernel_time_ms) * 1.0e6L));
+
+    copy_output_to_host(result.output, device_c);
+    return result;
+}
+
 }  // namespace
 
 Matrix gemm_cuda_naive(const Matrix& a, const Matrix& b) {
@@ -281,63 +351,17 @@ CudaGemmBenchmarkResult benchmark_cuda_naive(
     const Matrix& b,
     std::size_t warmup_iterations,
     std::size_t measured_iterations) {
-    if (a.columns() != b.rows()) {
-        throw std::invalid_argument("GEMM inner dimensions must match");
-    }
-    if (measured_iterations == 0) {
-        throw std::invalid_argument("measured iteration count must be positive");
-    }
+    return benchmark_cuda(
+        a, b, warmup_iterations, measured_iterations, launch_naive_gemm);
+}
 
-    CudaGemmBenchmarkResult result;
-    result.output = Matrix(a.rows(), b.columns());
-    result.warmup_iterations = warmup_iterations;
-    result.measured_iterations = measured_iterations;
-
-    if (result.output.size() == 0 || a.columns() == 0) {
-        return result;
-    }
-
-    DeviceBuffer device_a(a.size());
-    DeviceBuffer device_b(b.size());
-    DeviceBuffer device_c(result.output.size());
-    copy_inputs_to_device(a, b, device_a, device_b);
-
-    for (std::size_t iteration = 0; iteration < warmup_iterations; ++iteration) {
-        launch_naive_gemm(
-            device_a.data(), device_b.data(), device_c.data(),
-            a.rows(), a.columns(), b.columns());
-    }
-    require_cuda_success(cudaDeviceSynchronize(), "complete naive GEMM warmups");
-
-    CudaEvent start;
-    CudaEvent stop;
-    require_cuda_success(cudaEventRecord(start.get()), "record benchmark start event");
-    for (std::size_t iteration = 0; iteration < measured_iterations; ++iteration) {
-        launch_naive_gemm(
-            device_a.data(), device_b.data(), device_c.data(),
-            a.rows(), a.columns(), b.columns());
-    }
-    require_cuda_success(cudaEventRecord(stop.get()), "record benchmark stop event");
-    require_cuda_success(cudaEventSynchronize(stop.get()), "wait for benchmark stop event");
-    require_cuda_success(
-        cudaEventElapsedTime(
-            &result.total_kernel_time_ms,
-            start.get(),
-            stop.get()),
-        "calculate elapsed kernel time");
-
-    result.average_kernel_time_ms =
-        result.total_kernel_time_ms / static_cast<float>(measured_iterations);
-    const long double operations =
-        2.0L * static_cast<long double>(a.rows()) *
-        static_cast<long double>(a.columns()) *
-        static_cast<long double>(b.columns());
-    result.achieved_gflops = static_cast<double>(
-        operations /
-        (static_cast<long double>(result.average_kernel_time_ms) * 1.0e6L));
-
-    copy_output_to_host(result.output, device_c);
-    return result;
+CudaGemmBenchmarkResult benchmark_cuda_tiled(
+    const Matrix& a,
+    const Matrix& b,
+    std::size_t warmup_iterations,
+    std::size_t measured_iterations) {
+    return benchmark_cuda(
+        a, b, warmup_iterations, measured_iterations, launch_tiled_gemm);
 }
 
 }  // namespace gpu_perf

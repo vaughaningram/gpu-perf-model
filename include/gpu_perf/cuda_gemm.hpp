@@ -44,4 +44,10 @@ struct CudaDeviceMetadata {
     std::size_t warmup_iterations,
     std::size_t measured_iterations);
 
+[[nodiscard]] CudaGemmBenchmarkResult benchmark_cuda_tiled(
+    const Matrix& a,
+    const Matrix& b,
+    std::size_t warmup_iterations,
+    std::size_t measured_iterations);
+
 }  // namespace gpu_perf

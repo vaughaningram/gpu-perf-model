@@ -13,6 +13,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -46,7 +47,7 @@ std::size_t parse_nonnegative_size(const char* text, const char* name) {
 
 void print_usage(const char* program) {
     std::cerr << "Usage: " << program
-              << " [M K N [warmups measured_iterations]] [--csv]\n";
+              << " [M K N [warmups measured_iterations]] [--tiled] [--csv]\n";
 }
 
 std::string version_string(int encoded_version) {
@@ -95,15 +96,20 @@ std::string csv_escape(const std::string& value) {
 int main(int argc, char** argv) {
     try {
         bool csv_output = false;
-        int value_argument_count = argc;
-        if (argc > 1 && std::string(argv[argc - 1]) == "--csv") {
-            csv_output = true;
-            --value_argument_count;
+        bool tiled_kernel = false;
+        std::vector<std::string> values;
+        for (int index = 1; index < argc; ++index) {
+            const std::string argument = argv[index];
+            if (argument == "--csv") {
+                csv_output = true;
+            } else if (argument == "--tiled") {
+                tiled_kernel = true;
+            } else {
+                values.push_back(argument);
+            }
         }
 
-        if (value_argument_count != 1 &&
-            value_argument_count != 4 &&
-            value_argument_count != 6) {
+        if (!values.empty() && values.size() != 3 && values.size() != 5) {
             print_usage(argv[0]);
             return EXIT_FAILURE;
         }
@@ -114,21 +120,24 @@ int main(int argc, char** argv) {
         std::size_t warmups = 5;
         std::size_t measured_iterations = 20;
 
-        if (value_argument_count >= 4) {
-            m = parse_positive_size(argv[1], "M");
-            k = parse_positive_size(argv[2], "K");
-            n = parse_positive_size(argv[3], "N");
+        if (values.size() >= 3) {
+            m = parse_positive_size(values[0].c_str(), "M");
+            k = parse_positive_size(values[1].c_str(), "K");
+            n = parse_positive_size(values[2].c_str(), "N");
         }
-        if (value_argument_count == 6) {
-            warmups = parse_nonnegative_size(argv[4], "warmups");
-            measured_iterations = parse_positive_size(argv[5], "measured_iterations");
+        if (values.size() == 5) {
+            warmups = parse_nonnegative_size(values[3].c_str(), "warmups");
+            measured_iterations =
+                parse_positive_size(values[4].c_str(), "measured_iterations");
         }
 
         const auto a = gpu_perf::make_deterministic_matrix(m, k, 0xA341316CU);
         const auto b = gpu_perf::make_deterministic_matrix(k, n, 0xC8013EA4U);
 
-        const auto benchmark =
-            gpu_perf::benchmark_cuda_naive(a, b, warmups, measured_iterations);
+        const auto benchmark = tiled_kernel
+            ? gpu_perf::benchmark_cuda_tiled(a, b, warmups, measured_iterations)
+            : gpu_perf::benchmark_cuda_naive(a, b, warmups, measured_iterations);
+        const std::string kernel_name = tiled_kernel ? "tiled16" : "naive";
 
         // Correctness work occurs after the timed GPU region.
         const auto expected = gpu_perf::gemm_cpu_reference(a, b);
@@ -160,7 +169,7 @@ int main(int argc, char** argv) {
                 << compute_capability << ','
                 << version_string(device.driver_version) << ','
                 << version_string(device.runtime_version) << ','
-                << "naive," << m << ',' << k << ',' << n << ','
+                << kernel_name << ',' << m << ',' << k << ',' << n << ','
                 << benchmark.warmup_iterations << ','
                 << benchmark.measured_iterations << ','
                 << benchmark.total_kernel_time_ms << ','
@@ -178,7 +187,7 @@ int main(int argc, char** argv) {
             std::cout << "compute_capability=" << compute_capability << '\n';
             std::cout << "driver_version=" << version_string(device.driver_version) << '\n';
             std::cout << "cuda_runtime_version=" << version_string(device.runtime_version) << '\n';
-            std::cout << "kernel=naive\n";
+            std::cout << "kernel=" << kernel_name << '\n';
             std::cout << "m=" << m << '\n';
             std::cout << "k=" << k << '\n';
             std::cout << "n=" << n << '\n';

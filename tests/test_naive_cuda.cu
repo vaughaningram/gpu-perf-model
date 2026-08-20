@@ -106,6 +106,21 @@ void test_event_timed_benchmark() {
         "timed benchmark output disagreed with CPU reference");
 }
 
+void test_tiled_event_timed_benchmark() {
+    const auto a = gpu_perf::make_deterministic_matrix(32, 17, 7U);
+    const auto b = gpu_perf::make_deterministic_matrix(17, 24, 8U);
+    const auto expected = gpu_perf::gemm_cpu_reference(a, b);
+    const auto benchmark = gpu_perf::benchmark_cuda_tiled(a, b, 2, 3);
+
+    require(benchmark.warmup_iterations == 2, "tiled benchmark lost the warmup count");
+    require(benchmark.measured_iterations == 3, "tiled benchmark lost the measured count");
+    require(benchmark.total_kernel_time_ms > 0.0F, "tiled benchmark reported no time");
+    require(benchmark.achieved_gflops > 0.0, "tiled benchmark reported no throughput");
+    require(
+        gpu_perf::compare_matrices(expected, benchmark.output, 1.0e-4F, 1.0e-4F).passed,
+        "timed tiled benchmark output disagreed with CPU reference");
+}
+
 void test_device_metadata() {
     const auto metadata = gpu_perf::current_cuda_device_metadata();
     require(!metadata.name.empty(), "CUDA device metadata has no name");
@@ -129,6 +144,7 @@ int main() {
         require_tiled_gpu_matches_cpu(1, 37, 29, 15U, 16U);
         test_invalid_dimensions();
         test_event_timed_benchmark();
+        test_tiled_event_timed_benchmark();
         test_device_metadata();
     } catch (const std::exception& error) {
         std::cerr << "Naive CUDA correctness test failure: " << error.what() << '\n';
