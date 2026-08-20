@@ -24,7 +24,7 @@ traffic implied by an actual kernel. Comparisons with profiler measurements will
 name the relevant cache or DRAM level. Occupancy is treated as a constraint and
 diagnostic—not as a target to maximize.
 
-## Current milestone: M1 — Roofline model and discrepancy analysis
+## Current milestone: M2 — Shared-memory tiled GEMM
 
 M0 established a trustworthy baseline:
 
@@ -38,8 +38,12 @@ M0 established a trustworthy baseline:
 - [x] Document the naive kernel's memory behavior
 
 M1 has frozen analytical roofline predictions and compared them with M0. The
-remaining M1 step is focused profiling to replace traffic assumptions and
-bottleneck hypotheses with measured evidence. The learning checkpoints for all
+focused profile identified L1TEX global-load pressure rather than HBM bandwidth
+or occupancy as the naive kernel's constraint. M2 predicted, implemented,
+measured, and profiled a 16x16 shared-memory tiled kernel. The implementation
+reaches 4.638 TFLOP/s at 2048, a 1.53x speedup, and moves the dominant reported
+stall pressure to the MIO path used by shared-memory instructions. The remaining
+M2 step is the owner understanding checkpoint. Learning checkpoints for all
 milestones are maintained in
 [`docs/milestone-understanding.md`](docs/milestone-understanding.md).
 

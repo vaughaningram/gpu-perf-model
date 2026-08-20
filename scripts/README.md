@@ -53,3 +53,6 @@ compatible executable explicitly:
 ```bash
 GPU_PERF_NCU=/path/to/ncu ./scripts/profile_naive_a100.sh
 ```
+
+Select the M2 kernel with `GPU_PERF_PROFILE_KERNEL=tiled16`; the default remains
+`naive` so existing M1 commands retain their meaning.

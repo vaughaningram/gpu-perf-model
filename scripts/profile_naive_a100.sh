@@ -6,8 +6,24 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 benchmark="${repo_root}/build/naive_gemm_benchmark"
 expected_gpu="${GPU_PERF_EXPECTED_GPU:-NVIDIA A100 80GB PCIe}"
 size="${GPU_PERF_PROFILE_SIZE:-2048}"
-output="${GPU_PERF_PROFILE_OUTPUT:-${repo_root}/results/naive_a100_80gb_${size}.ncu-rep}"
+kernel="${GPU_PERF_PROFILE_KERNEL:-naive}"
+output="${GPU_PERF_PROFILE_OUTPUT:-${repo_root}/results/${kernel}_a100_80gb_${size}.ncu-rep}"
 ncu_command="${GPU_PERF_NCU:-ncu}"
+
+case "${kernel}" in
+    naive)
+        kernel_regex="gemm_naive_kernel"
+        benchmark_options=()
+        ;;
+    tiled16)
+        kernel_regex="gemm_tiled_kernel"
+        benchmark_options=(--tiled)
+        ;;
+    *)
+        echo "Unsupported profile kernel: ${kernel} (expected naive or tiled16)" >&2
+        exit 1
+        ;;
+esac
 
 if [[ ! -x "${benchmark}" ]]; then
     echo "Benchmark executable not found: ${benchmark}" >&2
@@ -28,7 +44,7 @@ if [[ "${actual_gpu}" != "${expected_gpu}" ]]; then
 fi
 
 "${ncu_command}" \
-    --kernel-name regex:gemm_naive_kernel \
+    --kernel-name "regex:${kernel_regex}" \
     --launch-skip 5 \
     --launch-count 1 \
     --section SpeedOfLight \
@@ -41,6 +57,6 @@ fi
     --section InstructionStats \
     --export "${output}" \
     --force-overwrite \
-    "${benchmark}" "${size}" "${size}" "${size}" 5 1
+    "${benchmark}" "${size}" "${size}" "${size}" 5 1 "${benchmark_options[@]}"
 
 echo "Nsight Compute report: ${output}" >&2

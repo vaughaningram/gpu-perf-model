@@ -59,7 +59,8 @@ Be able to explain:
 - how to predict the tiled kernel before measuring it; and
 - which measurements show whether the expected traffic reduction occurred.
 
-Checkpoint status: not started.
+Checkpoint status: implementation, measurement, and profiler explanation
+complete; owner explanation pending.
 
 ## M3 — Resource and occupancy model
 

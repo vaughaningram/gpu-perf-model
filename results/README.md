@@ -19,3 +19,7 @@ reports are tool-specific binary artifacts.
 
 `m2_a100_80gb_tiled16_predictions.csv` freezes the first shared-memory tiled
 GEMM predictions before its CUDA implementation or measurement.
+
+`tiled16_a100_80gb_baseline.csv` is the controlled M2 size sweep, and
+`m2_tiled16_a100_80gb_2048_profile_summary.csv` records the focused evidence
+used to explain its performance.
