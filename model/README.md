@@ -17,7 +17,26 @@ Run one model evaluation from the repository root:
 
 ```bash
 python -m model.gemm_model 512 512 512
+python -m model.gemm_model 512 512 512 --roofline
 python -m model.gemm_model 512 512 512 --csv
+```
+
+The canonical hardware profile is the NVIDIA A100 80GB PCIe measured in M0:
+
+- peak ordinary FP32: 19,500 GFLOP/s
+- peak HBM2e bandwidth: 1,935 GB/s
+- ridge point: 19,500 / 1,935 = 10.078 FLOP/byte
+
+These are decimal vendor peaks from the
+[NVIDIA A100 data sheet](https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/a100/pdf/nvidia-a100-datasheet-us-nvidia-1758950-r4-web.pdf).
+The FP32 value is used instead of the TF32 Tensor Core value because the naive
+kernel issues ordinary FP32 multiply-add operations and no Tensor Core matrix
+instructions.
+
+For each traffic interpretation, the model applies:
+
+```text
+roofline performance = min(peak FP32, arithmetic intensity * peak bandwidth)
 ```
 
 Run the equation tests with:
@@ -25,4 +44,3 @@ Run the equation tests with:
 ```bash
 python -m unittest tests.test_gemm_model
 ```
-

@@ -1,6 +1,12 @@
 import unittest
 
-from model.gemm_model import GemmProblem, model_gemm
+from model.gemm_model import (
+    A100_80GB_PCIE,
+    GemmProblem,
+    HardwareCeilings,
+    model_gemm,
+    predict_roofline,
+)
 
 
 class GemmModelTests(unittest.TestCase):
@@ -43,7 +49,32 @@ class GemmModelTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             GemmProblem(True, 2, 2)
 
+    def test_a100_80gb_pcie_ridge_point(self) -> None:
+        self.assertAlmostEqual(
+            A100_80GB_PCIE.ridge_point_flops_per_byte,
+            19_500.0 / 1_935.0,
+        )
+
+    def test_roofline_selects_bandwidth_and_compute_limits(self) -> None:
+        workload = model_gemm(GemmProblem(m=512, k=512, n=512))
+        prediction = predict_roofline(workload)
+
+        self.assertEqual(prediction.algorithmic_minimum_limit, "compute")
+        self.assertEqual(prediction.algorithmic_minimum_gflops, 19_500.0)
+        self.assertEqual(prediction.naive_scalar_request_limit, "bandwidth")
+        self.assertAlmostEqual(
+            prediction.naive_scalar_request_gflops,
+            workload.naive_scalar_request_ai * 1_935.0,
+        )
+
+    def test_roofline_can_be_evaluated_for_other_hardware(self) -> None:
+        hardware = HardwareCeilings("test device", 100.0, 25.0)
+        workload = model_gemm(GemmProblem(m=2, k=2, n=2))
+        prediction = predict_roofline(workload, hardware)
+
+        self.assertAlmostEqual(prediction.algorithmic_minimum_gflops, 25.0 / 3.0)
+        self.assertEqual(prediction.algorithmic_minimum_limit, "bandwidth")
+
 
 if __name__ == "__main__":
     unittest.main()
-

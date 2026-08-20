@@ -46,6 +46,71 @@ class GemmWorkloadModel:
         return asdict(self)
 
 
+@dataclass(frozen=True)
+class HardwareCeilings:
+    """Peak ceilings expressed in decimal GFLOP/s and GB/s."""
+
+    name: str
+    fp32_gflops: float
+    memory_bandwidth_gbytes_per_second: float
+
+    @property
+    def ridge_point_flops_per_byte(self) -> float:
+        return self.fp32_gflops / self.memory_bandwidth_gbytes_per_second
+
+
+A100_80GB_PCIE = HardwareCeilings(
+    name="NVIDIA A100 80GB PCIe",
+    fp32_gflops=19_500.0,
+    memory_bandwidth_gbytes_per_second=1_935.0,
+)
+
+
+@dataclass(frozen=True)
+class RooflinePrediction:
+    """Roofline predictions for the two workload traffic assumptions."""
+
+    workload: GemmWorkloadModel
+    hardware: HardwareCeilings
+    algorithmic_minimum_gflops: float
+    algorithmic_minimum_limit: str
+    naive_scalar_request_gflops: float
+    naive_scalar_request_limit: str
+
+
+def _roofline_endpoint(
+    arithmetic_intensity: float, hardware: HardwareCeilings
+) -> tuple[float, str]:
+    bandwidth_ceiling = (
+        arithmetic_intensity * hardware.memory_bandwidth_gbytes_per_second
+    )
+    if bandwidth_ceiling < hardware.fp32_gflops:
+        return bandwidth_ceiling, "bandwidth"
+    return hardware.fp32_gflops, "compute"
+
+
+def predict_roofline(
+    workload: GemmWorkloadModel,
+    hardware: HardwareCeilings = A100_80GB_PCIE,
+) -> RooflinePrediction:
+    """Apply min(peak compute, AI * peak bandwidth) to both AI definitions."""
+
+    algorithmic_performance, algorithmic_limit = _roofline_endpoint(
+        workload.algorithmic_minimum_ai, hardware
+    )
+    naive_performance, naive_limit = _roofline_endpoint(
+        workload.naive_scalar_request_ai, hardware
+    )
+    return RooflinePrediction(
+        workload=workload,
+        hardware=hardware,
+        algorithmic_minimum_gflops=algorithmic_performance,
+        algorithmic_minimum_limit=algorithmic_limit,
+        naive_scalar_request_gflops=naive_performance,
+        naive_scalar_request_limit=naive_limit,
+    )
+
+
 def model_gemm(problem: GemmProblem) -> GemmWorkloadModel:
     """Calculate FP32 GEMM work and two explicitly named traffic models."""
 
@@ -105,6 +170,30 @@ def _write_human_readable(result: GemmWorkloadModel) -> None:
     print(f"naive_scalar_request_ai={result.naive_scalar_request_ai:.6f}")
 
 
+def _write_roofline(result: GemmWorkloadModel) -> None:
+    prediction = predict_roofline(result)
+    print(f"hardware={prediction.hardware.name}")
+    print(f"peak_fp32_gflops={prediction.hardware.fp32_gflops:.6f}")
+    print(
+        "peak_memory_bandwidth_gbytes_per_second="
+        f"{prediction.hardware.memory_bandwidth_gbytes_per_second:.6f}"
+    )
+    print(
+        "ridge_point_flops_per_byte="
+        f"{prediction.hardware.ridge_point_flops_per_byte:.6f}"
+    )
+    print(
+        "algorithmic_minimum_roofline_gflops="
+        f"{prediction.algorithmic_minimum_gflops:.6f}"
+    )
+    print(f"algorithmic_minimum_limit={prediction.algorithmic_minimum_limit}")
+    print(
+        "naive_scalar_request_roofline_gflops="
+        f"{prediction.naive_scalar_request_gflops:.6f}"
+    )
+    print(f"naive_scalar_request_limit={prediction.naive_scalar_request_limit}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Calculate hardware-independent FP32 GEMM model quantities."
@@ -113,6 +202,11 @@ def main() -> None:
     parser.add_argument("k", type=_positive_integer)
     parser.add_argument("n", type=_positive_integer)
     parser.add_argument("--csv", action="store_true", help="emit one CSV row")
+    parser.add_argument(
+        "--roofline",
+        action="store_true",
+        help="append NVIDIA A100 80GB PCIe roofline predictions",
+    )
     arguments = parser.parse_args()
 
     result = model_gemm(GemmProblem(arguments.m, arguments.k, arguments.n))
@@ -120,8 +214,9 @@ def main() -> None:
         _write_csv(result)
     else:
         _write_human_readable(result)
+        if arguments.roofline:
+            _write_roofline(result)
 
 
 if __name__ == "__main__":
     main()
-
