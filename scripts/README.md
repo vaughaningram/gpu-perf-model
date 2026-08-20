@@ -23,3 +23,14 @@ GPU_PERF_WARMUPS=10 GPU_PERF_MEASURED_ITERATIONS=50 \
 
 Changing `GPU_PERF_EXPECTED_GPU` is permitted for labeled bring-up experiments,
 but those results must not be mixed with the primary A100 80 GB dataset.
+
+## Naive GEMM focused profile
+
+After building, collect the M1 Nsight Compute report on the canonical GPU:
+
+```bash
+./scripts/profile_naive_a100.sh
+```
+
+The default problem is 2048x2048x2048. Override it only for an explicitly
+labeled comparison, for example `GPU_PERF_PROFILE_SIZE=512`.

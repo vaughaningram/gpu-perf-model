@@ -8,3 +8,6 @@ identify the exact measurement-code commit and A100 environment used.
 
 `m1_a100_80gb_pcie_roofline_predictions.csv` freezes the analytical M1
 predictions before comparison with that M0 sweep.
+
+`m1_naive_roofline_comparison.csv` compares the frozen prediction endpoints
+with M0 and records model residuals used to choose focused profiler metrics.
