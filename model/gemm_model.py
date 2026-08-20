@@ -47,6 +47,68 @@ class GemmWorkloadModel:
 
 
 @dataclass(frozen=True)
+class TiledGemmModel:
+    """Global-request model for a square shared-memory GEMM tile."""
+
+    workload: GemmWorkloadModel
+    tile_size: int
+    output_row_tiles: int
+    output_column_tiles: int
+    tiled_global_request_bytes: int
+    tiled_global_request_ai: float
+    input_request_reduction: float
+
+
+def model_tiled_gemm(
+    problem: GemmProblem, tile_size: int = 16
+) -> TiledGemmModel:
+    """Count guarded global loads made by a square shared-memory tiled kernel.
+
+    Each output tile loads every required A row segment once per output-column
+    tile and every required B column segment once per output-row tile. This
+    counts source-level global requests, not measured DRAM transactions.
+    """
+
+    if (
+        not isinstance(tile_size, int)
+        or isinstance(tile_size, bool)
+        or tile_size <= 0
+    ):
+        raise ValueError("tile_size must be a positive integer")
+
+    workload = model_gemm(problem)
+    output_row_tiles = (problem.m + tile_size - 1) // tile_size
+    output_column_tiles = (problem.n + tile_size - 1) // tile_size
+
+    # Edge guards mean only valid elements become global requests. Summing all
+    # K tiles covers each valid K element exactly once for each output tile.
+    tiled_global_request_elements = (
+        output_column_tiles * problem.m * problem.k
+        + output_row_tiles * problem.k * problem.n
+        + problem.m * problem.n
+    )
+    tiled_global_request_bytes = (
+        problem.bytes_per_element * tiled_global_request_elements
+    )
+
+    naive_input_bytes = problem.bytes_per_element * 2 * problem.m * problem.k * problem.n
+    tiled_input_bytes = problem.bytes_per_element * (
+        output_column_tiles * problem.m * problem.k
+        + output_row_tiles * problem.k * problem.n
+    )
+
+    return TiledGemmModel(
+        workload=workload,
+        tile_size=tile_size,
+        output_row_tiles=output_row_tiles,
+        output_column_tiles=output_column_tiles,
+        tiled_global_request_bytes=tiled_global_request_bytes,
+        tiled_global_request_ai=workload.flops / tiled_global_request_bytes,
+        input_request_reduction=naive_input_bytes / tiled_input_bytes,
+    )
+
+
+@dataclass(frozen=True)
 class HardwareCeilings:
     """Peak ceilings expressed in decimal GFLOP/s and GB/s."""
 
@@ -194,6 +256,21 @@ def _write_roofline(result: GemmWorkloadModel) -> None:
     print(f"naive_scalar_request_limit={prediction.naive_scalar_request_limit}")
 
 
+def _write_tiled(problem: GemmProblem, tile_size: int) -> None:
+    tiled = model_tiled_gemm(problem, tile_size)
+    performance, limit = _roofline_endpoint(
+        tiled.tiled_global_request_ai, A100_80GB_PCIE
+    )
+    print(f"tile_size={tiled.tile_size}")
+    print(f"output_row_tiles={tiled.output_row_tiles}")
+    print(f"output_column_tiles={tiled.output_column_tiles}")
+    print(f"tiled_global_request_bytes={tiled.tiled_global_request_bytes}")
+    print(f"tiled_global_request_ai={tiled.tiled_global_request_ai:.6f}")
+    print(f"input_request_reduction={tiled.input_request_reduction:.6f}")
+    print(f"tiled_global_request_roofline_gflops={performance:.6f}")
+    print(f"tiled_global_request_limit={limit}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Calculate hardware-independent FP32 GEMM model quantities."
@@ -207,6 +284,11 @@ def main() -> None:
         action="store_true",
         help="append NVIDIA A100 80GB PCIe roofline predictions",
     )
+    parser.add_argument(
+        "--tile-size",
+        type=_positive_integer,
+        help="append a square shared-memory tiled global-request model",
+    )
     arguments = parser.parse_args()
 
     result = model_gemm(GemmProblem(arguments.m, arguments.k, arguments.n))
@@ -216,6 +298,8 @@ def main() -> None:
         _write_human_readable(result)
         if arguments.roofline:
             _write_roofline(result)
+        if arguments.tile_size is not None:
+            _write_tiled(GemmProblem(arguments.m, arguments.k, arguments.n), arguments.tile_size)
 
 
 if __name__ == "__main__":

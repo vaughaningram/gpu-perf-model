@@ -1,0 +1,6 @@
+schema_version,gpu_name,tile_size,m,k,n,tiled_global_request_bytes,tiled_global_request_ai,input_request_reduction,tiled_global_request_roofline_gflops,predicted_limit
+1,NVIDIA A100 80GB PCIe,16,128,128,128,1114112,3.764706,16.000000,7284.705882,bandwidth
+1,NVIDIA A100 80GB PCIe,16,256,256,256,8650752,3.878788,16.000000,7505.454545,bandwidth
+1,NVIDIA A100 80GB PCIe,16,512,512,512,68157440,3.938462,16.000000,7620.923077,bandwidth
+1,NVIDIA A100 80GB PCIe,16,1024,1024,1024,541065216,3.968992,16.000000,7680.000000,bandwidth
+1,NVIDIA A100 80GB PCIe,16,2048,2048,2048,4311744512,3.984436,16.000000,7709.883268,bandwidth

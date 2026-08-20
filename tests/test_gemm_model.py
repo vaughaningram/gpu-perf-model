@@ -5,6 +5,7 @@ from model.gemm_model import (
     GemmProblem,
     HardwareCeilings,
     model_gemm,
+    model_tiled_gemm,
     predict_roofline,
 )
 
@@ -74,6 +75,29 @@ class GemmModelTests(unittest.TestCase):
 
         self.assertAlmostEqual(prediction.algorithmic_minimum_gflops, 25.0 / 3.0)
         self.assertEqual(prediction.algorithmic_minimum_limit, "bandwidth")
+
+    def test_tiled_model_for_divisible_square_problem(self) -> None:
+        tiled = model_tiled_gemm(GemmProblem(32, 32, 32), tile_size=16)
+
+        expected_elements = 2 * 32 * 32 + 2 * 32 * 32 + 32 * 32
+        self.assertEqual(tiled.output_row_tiles, 2)
+        self.assertEqual(tiled.output_column_tiles, 2)
+        self.assertEqual(tiled.tiled_global_request_bytes, 4 * expected_elements)
+        self.assertAlmostEqual(tiled.input_request_reduction, 16.0)
+
+    def test_tiled_model_counts_only_valid_edge_requests(self) -> None:
+        tiled = model_tiled_gemm(GemmProblem(17, 5, 9), tile_size=16)
+
+        expected_elements = 1 * 17 * 5 + 2 * 5 * 9 + 17 * 9
+        self.assertEqual(tiled.output_row_tiles, 2)
+        self.assertEqual(tiled.output_column_tiles, 1)
+        self.assertEqual(tiled.tiled_global_request_bytes, 4 * expected_elements)
+
+    def test_invalid_tile_sizes_are_rejected(self) -> None:
+        for tile_size in (0, -1, True):
+            with self.subTest(tile_size=tile_size):
+                with self.assertRaises(ValueError):
+                    model_tiled_gemm(GemmProblem(16, 16, 16), tile_size)
 
 
 if __name__ == "__main__":

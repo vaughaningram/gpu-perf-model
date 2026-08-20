@@ -16,3 +16,6 @@ with M0 and records model residuals used to choose focused profiler metrics.
 profiler evidence used for the final M1 bottleneck explanation and size
 contrast. The raw `.ncu-rep` files are excluded from Git because profiler
 reports are tool-specific binary artifacts.
+
+`m2_a100_80gb_tiled16_predictions.csv` freezes the first shared-memory tiled
+GEMM predictions before its CUDA implementation or measurement.

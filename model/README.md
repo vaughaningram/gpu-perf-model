@@ -18,6 +18,7 @@ Run one model evaluation from the repository root:
 ```bash
 python -m model.gemm_model 512 512 512
 python -m model.gemm_model 512 512 512 --roofline
+python -m model.gemm_model 512 512 512 --roofline --tile-size 16
 python -m model.gemm_model 512 512 512 --csv
 ```
 
@@ -38,6 +39,12 @@ For each traffic interpretation, the model applies:
 ```text
 roofline performance = min(peak FP32, arithmetic intensity * peak bandwidth)
 ```
+
+The tiled model counts guarded global requests for a square shared-memory tile.
+It assumes each block loads one A tile and one B tile per K phase, then reuses
+those values from shared memory. It does not claim those global requests equal
+DRAM traffic, and it does not yet model shared-memory bandwidth, synchronization,
+instruction issue, or occupancy costs.
 
 Run the equation tests with:
 
