@@ -24,6 +24,18 @@ GPU_PERF_WARMUPS=10 GPU_PERF_MEASURED_ITERATIONS=50 \
 Changing `GPU_PERF_EXPECTED_GPU` is permitted for labeled bring-up experiments,
 but those results must not be mixed with the primary A100 80 GB dataset.
 
+## Tiled GEMM size sweep
+
+After the M2 prediction has been frozen, run the controlled 16x16 tiled sweep:
+
+```bash
+bash scripts/run_tiled_sweep.sh | tee results/tiled16_a100_80gb_baseline.csv
+```
+
+The hardware guard, sizes, warmups, iterations, and CSV schema match the naive
+sweep. The benchmark's default remains naive; `--tiled` explicitly selects the
+shared-memory implementation.
+
 ## Naive GEMM focused profile
 
 After building, collect the M1 Nsight Compute report on the canonical GPU:
