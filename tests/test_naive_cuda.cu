@@ -37,6 +37,26 @@ void require_gpu_matches_cpu(
             ", max_rel_error=" + std::to_string(comparison.maximum_relative_error));
 }
 
+void require_tiled_gpu_matches_cpu(
+    std::size_t m,
+    std::size_t k,
+    std::size_t n,
+    std::uint32_t seed_a,
+    std::uint32_t seed_b) {
+    const auto a = gpu_perf::make_deterministic_matrix(m, k, seed_a);
+    const auto b = gpu_perf::make_deterministic_matrix(k, n, seed_b);
+    const auto expected = gpu_perf::gemm_cpu_reference(a, b);
+    const auto actual = gpu_perf::gemm_cuda_tiled(a, b);
+    const auto comparison = gpu_perf::compare_matrices(expected, actual, 1.0e-4F, 1.0e-4F);
+
+    require(
+        comparison.passed,
+        "tiled CUDA GEMM disagreed with CPU reference: mismatches=" +
+            std::to_string(comparison.mismatched_elements) +
+            ", max_abs_error=" + std::to_string(comparison.maximum_absolute_error) +
+            ", max_rel_error=" + std::to_string(comparison.maximum_relative_error));
+}
+
 void test_known_product() {
     const gpu_perf::Matrix a(2, 3, {1.0F, 2.0F, 3.0F, 4.0F, 5.0F, 6.0F});
     const gpu_perf::Matrix b(3, 2, {7.0F, 8.0F, 9.0F, 10.0F, 11.0F, 12.0F});
@@ -58,6 +78,16 @@ void test_invalid_dimensions() {
         threw = true;
     }
     require(threw, "naive CUDA GEMM accepted incompatible dimensions");
+
+    threw = false;
+    try {
+        const gpu_perf::Matrix a(2, 3);
+        const gpu_perf::Matrix b(4, 2);
+        static_cast<void>(gpu_perf::gemm_cuda_tiled(a, b));
+    } catch (const std::invalid_argument&) {
+        threw = true;
+    }
+    require(threw, "tiled CUDA GEMM accepted incompatible dimensions");
 }
 
 void test_event_timed_benchmark() {
@@ -94,6 +124,9 @@ int main() {
         require_gpu_matches_cpu(16, 16, 16, 1U, 2U);
         require_gpu_matches_cpu(19, 13, 7, 3U, 4U);
         require_gpu_matches_cpu(1, 37, 29, 5U, 6U);
+        require_tiled_gpu_matches_cpu(16, 16, 16, 11U, 12U);
+        require_tiled_gpu_matches_cpu(19, 13, 7, 13U, 14U);
+        require_tiled_gpu_matches_cpu(1, 37, 29, 15U, 16U);
         test_invalid_dimensions();
         test_event_timed_benchmark();
         test_device_metadata();

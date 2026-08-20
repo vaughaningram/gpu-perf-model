@@ -11,6 +11,10 @@ namespace gpu_perf {
 // This baseline intentionally performs no explicit tiling or shared-memory reuse.
 [[nodiscard]] Matrix gemm_cuda_naive(const Matrix& a, const Matrix& b);
 
+// Computes C = A * B with a 16x16 cooperative shared-memory tile. Bounds
+// guards support dimensions that are not multiples of the tile width.
+[[nodiscard]] Matrix gemm_cuda_tiled(const Matrix& a, const Matrix& b);
+
 struct CudaGemmBenchmarkResult {
     Matrix output;
     std::size_t warmup_iterations{0};
