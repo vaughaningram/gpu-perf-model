@@ -34,3 +34,10 @@ After building, collect the M1 Nsight Compute report on the canonical GPU:
 
 The default problem is 2048x2048x2048. Override it only for an explicitly
 labeled comparison, for example `GPU_PERF_PROFILE_SIZE=512`.
+
+If the `ncu` on `PATH` is incompatible with the installed driver, select a
+compatible executable explicitly:
+
+```bash
+GPU_PERF_NCU=/path/to/ncu ./scripts/profile_naive_a100.sh
+```

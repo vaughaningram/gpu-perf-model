@@ -44,8 +44,8 @@ Be able to explain:
   the roofline model; and
 - why a result below peak compute does not alone diagnose the bottleneck.
 
-Checkpoint status: analytical model and comparison complete; profiler evidence
-and final explanation pending.
+Checkpoint status: implementation and profiler explanation complete. The owner
+should now practice explaining the conclusion before beginning M2 implementation.
 
 ## M2 — Shared-memory tiled GEMM
 
