@@ -118,3 +118,24 @@ sustained stream of global load instructions drives L1/TEX throughput to 95%
 and exposes load-queue throttling. Thus increasing problem size explains the
 rise toward the M0 plateau, while it does not remove the underlying load-path
 bottleneck.
+
+## Cross-node reproducibility
+
+An uninstrumented repeat sweep ran on A100 80GB PCIe node `pax007` on
+2026-08-20 with the same five warmups and twenty measured iterations. The raw
+repeat file remains in Pax scratch storage rather than replacing the frozen M0
+dataset.
+
+| Size | M0 on pax106 | Repeat on pax007 | Relative difference |
+| ---: | ---: | ---: | ---: |
+| 128 | 433.439 GFLOP/s | 424.456 GFLOP/s | -2.07% |
+| 256 | 1,689.072 GFLOP/s | 1,689.072 GFLOP/s | 0.00% |
+| 512 | 2,580.157 GFLOP/s | 2,581.428 GFLOP/s | +0.05% |
+| 1024 | 2,995.931 GFLOP/s | 2,998.287 GFLOP/s | +0.08% |
+| 2048 | 3,025.102 GFLOP/s | 3,029.062 GFLOP/s | +0.13% |
+
+The plateau cases reproduce within 0.13% across the two nodes. The 128 case is
+more variable because its approximately 10-microsecond kernel duration makes
+fixed launch, scheduling, and clock-state effects a larger fraction of the
+measurement. The repeat supports treating the approximately 3.03 TFLOP/s
+plateau as stable behavior of this implementation on the target SKU.
