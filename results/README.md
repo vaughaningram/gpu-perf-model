@@ -12,6 +12,7 @@ predictions before comparison with that M0 sweep.
 `m1_naive_roofline_comparison.csv` compares the frozen prediction endpoints
 with M0 and records model residuals used to choose focused profiler metrics.
 
-`m1_naive_a100_80gb_2048_profile_summary.csv` records the focused profiler
-evidence used for the final M1 bottleneck explanation. The raw `.ncu-rep` is
-excluded from Git because profiler reports are tool-specific binary artifacts.
+`m1_naive_a100_80gb_profile_summary.csv` records the focused 512 and 2048
+profiler evidence used for the final M1 bottleneck explanation and size
+contrast. The raw `.ncu-rep` files are excluded from Git because profiler
+reports are tool-specific binary artifacts.

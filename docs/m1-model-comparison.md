@@ -94,3 +94,27 @@ The appropriate next hypothesis is explicit shared-memory tiling: reduce the
 number of global load instructions, expose controlled on-chip reuse, and then
 test whether L1TEX pressure and load-dependency stalls fall. This conclusion
 motivates M2; it does not yet claim how much speedup tiling will achieve.
+
+## Size contrast: 512 versus 2048
+
+A second focused profile at 512x512x512 tested whether the plateau case's
+behavior was already present at a smaller size.
+
+| Metric | 512 | 2048 | Change with size |
+| --- | ---: | ---: | --- |
+| FP32 peak achieved | 13% | 16% | More useful throughput at the plateau |
+| L1/TEX throughput | 85.45% | 95.31% | L1TEX approaches saturation |
+| DRAM throughput | 0.68% | 0.38% | HBM remains clearly non-limiting |
+| Achieved occupancy | 76.70% | 98.27% | Larger grid supplies steadier parallel work |
+| Cycles with no eligible warp | 47.68% | 42.25% | More warps improve latency hiding, but gaps remain |
+| Long-scoreboard stall share | 54.4% | 35.7% | Waiting for loaded data dominates the smaller case |
+| LG-throttle stall share | not reported as dominant | 38.7% | Sustained loads fill the L1 instruction queue at 2048 |
+
+The 512 grid contains enough work to reach 13% of FP32 peak but does not keep
+the entire GPU in steady state as effectively as 2048. Its lower achieved
+occupancy leaves fewer eligible warps to cover L1TEX load latency. The larger
+case supplies more parallel work and improves FP32 utilization, but its
+sustained stream of global load instructions drives L1/TEX throughput to 95%
+and exposes load-queue throttling. Thus increasing problem size explains the
+rise toward the M0 plateau, while it does not remove the underlying load-path
+bottleneck.
