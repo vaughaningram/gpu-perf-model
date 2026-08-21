@@ -46,6 +46,8 @@ stall pressure to the MIO path used by shared-memory instructions. The remaining
 M2 step is the owner understanding checkpoint. Learning checkpoints for all
 milestones are maintained in
 [`docs/milestone-understanding.md`](docs/milestone-understanding.md).
+The gated execution plan through the final portfolio package is in
+[`docs/roadmap.md`](docs/roadmap.md).
 
 ## Repository layout
 
