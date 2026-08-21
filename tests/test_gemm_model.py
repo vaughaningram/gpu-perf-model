@@ -5,6 +5,7 @@ from model.gemm_model import (
     GemmProblem,
     HardwareCeilings,
     model_gemm,
+    model_microtiled_gemm,
     model_tiled_gemm,
     predict_roofline,
 )
@@ -98,6 +99,28 @@ class GemmModelTests(unittest.TestCase):
             with self.subTest(tile_size=tile_size):
                 with self.assertRaises(ValueError):
                     model_tiled_gemm(GemmProblem(16, 16, 16), tile_size)
+
+    def test_two_by_two_microtile_model(self) -> None:
+        result = model_microtiled_gemm(GemmProblem(64, 64, 64))
+
+        expected_elements = 2 * 64 * 64 + 2 * 64 * 64 + 64 * 64
+        self.assertEqual(result.output_tile_rows, 32)
+        self.assertEqual(result.output_tile_columns, 32)
+        self.assertEqual(result.global_request_bytes, 4 * expected_elements)
+        self.assertEqual(result.input_request_reduction, 32.0)
+        self.assertEqual(result.static_shared_memory_bytes, 4096)
+
+    def test_microtile_model_counts_guarded_edges(self) -> None:
+        result = model_microtiled_gemm(GemmProblem(33, 5, 17))
+
+        expected_elements = 1 * 33 * 5 + 2 * 5 * 17 + 33 * 17
+        self.assertEqual(result.global_request_bytes, 4 * expected_elements)
+
+    def test_invalid_microtile_parameters_are_rejected(self) -> None:
+        for parameters in ((0, 2, 2), (16, 0, 2), (16, 2, True)):
+            with self.subTest(parameters=parameters):
+                with self.assertRaises(ValueError):
+                    model_microtiled_gemm(GemmProblem(32, 32, 32), *parameters)
 
 
 if __name__ == "__main__":

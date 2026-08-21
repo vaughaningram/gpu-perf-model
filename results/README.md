@@ -26,3 +26,6 @@ used to explain its performance.
 
 `m3_cuda_resource_usage.csv` records compiler-reported registers, shared
 memory, local memory, and stack use alongside the resource-model prediction.
+
+`m4_microtile2x2_predictions.csv` freezes the first hypothesis-driven tuning
+prediction before implementation or measurement.

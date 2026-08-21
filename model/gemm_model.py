@@ -59,6 +59,22 @@ class TiledGemmModel:
     input_request_reduction: float
 
 
+@dataclass(frozen=True)
+class MicrotiledGemmModel:
+    """Global-request model for multiple outputs per thread."""
+
+    workload: GemmWorkloadModel
+    k_tile_size: int
+    thread_rows: int
+    thread_columns: int
+    output_tile_rows: int
+    output_tile_columns: int
+    global_request_bytes: int
+    global_request_ai: float
+    input_request_reduction: float
+    static_shared_memory_bytes: int
+
+
 def model_tiled_gemm(
     problem: GemmProblem, tile_size: int = 16
 ) -> TiledGemmModel:
@@ -105,6 +121,61 @@ def model_tiled_gemm(
         tiled_global_request_bytes=tiled_global_request_bytes,
         tiled_global_request_ai=workload.flops / tiled_global_request_bytes,
         input_request_reduction=naive_input_bytes / tiled_input_bytes,
+    )
+
+
+def model_microtiled_gemm(
+    problem: GemmProblem,
+    k_tile_size: int = 16,
+    thread_rows: int = 2,
+    thread_columns: int = 2,
+) -> MicrotiledGemmModel:
+    """Model a 16x16 thread block computing several outputs per thread."""
+
+    for name, value in (
+        ("k_tile_size", k_tile_size),
+        ("thread_rows", thread_rows),
+        ("thread_columns", thread_columns),
+    ):
+        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+            raise ValueError(f"{name} must be a positive integer")
+
+    workload = model_gemm(problem)
+    output_tile_rows = k_tile_size * thread_rows
+    output_tile_columns = k_tile_size * thread_columns
+    output_row_tiles = (
+        problem.m + output_tile_rows - 1
+    ) // output_tile_rows
+    output_column_tiles = (
+        problem.n + output_tile_columns - 1
+    ) // output_tile_columns
+
+    input_request_elements = (
+        output_column_tiles * problem.m * problem.k
+        + output_row_tiles * problem.k * problem.n
+    )
+    global_request_bytes = problem.bytes_per_element * (
+        input_request_elements + problem.m * problem.n
+    )
+    naive_input_elements = 2 * problem.m * problem.k * problem.n
+    static_shared_memory_elements = (
+        output_tile_rows * k_tile_size
+        + k_tile_size * output_tile_columns
+    )
+
+    return MicrotiledGemmModel(
+        workload=workload,
+        k_tile_size=k_tile_size,
+        thread_rows=thread_rows,
+        thread_columns=thread_columns,
+        output_tile_rows=output_tile_rows,
+        output_tile_columns=output_tile_columns,
+        global_request_bytes=global_request_bytes,
+        global_request_ai=workload.flops / global_request_bytes,
+        input_request_reduction=naive_input_elements / input_request_elements,
+        static_shared_memory_bytes=(
+            problem.bytes_per_element * static_shared_memory_elements
+        ),
     )
 
 
