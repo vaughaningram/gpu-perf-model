@@ -33,6 +33,16 @@ class ResourceModelTests(unittest.TestCase):
         self.assertEqual(result.resident_blocks, 8)
         self.assertEqual(result.theoretical_occupancy, 1.0)
 
+    def test_microtile_compiler_and_profile_limits_are_reproduced(self) -> None:
+        result = model_occupancy(KernelResources(256, 40, 4096))
+
+        self.assertEqual(result.block_limit_registers, 6)
+        self.assertEqual(result.block_limit_shared_memory, 12)
+        self.assertEqual(result.resident_blocks, 6)
+        self.assertEqual(result.resident_warps, 48)
+        self.assertEqual(result.theoretical_occupancy, 0.75)
+        self.assertEqual(result.limiting_resources, ("registers",))
+
     def test_register_allocation_is_rounded_per_warp(self) -> None:
         result = model_occupancy(KernelResources(64, 33, 0))
 

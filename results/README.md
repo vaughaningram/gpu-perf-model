@@ -29,3 +29,7 @@ memory, local memory, and stack use alongside the resource-model prediction.
 
 `m4_microtile2x2_predictions.csv` freezes the first hypothesis-driven tuning
 prediction before implementation or measurement.
+
+`microtile2x2_a100_80gb_baseline.csv` is the controlled M4 sweep, and
+`m4_microtile2x2_a100_80gb_2048_profile_summary.csv` records the focused
+profiler evidence used to evaluate the frozen hypothesis.

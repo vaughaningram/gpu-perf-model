@@ -1,3 +1,4 @@
 schema_version,source_commit,gpu_architecture,cuda_compiler,kernel,threads_per_block,registers_per_thread,static_shared_memory_bytes,local_memory_bytes,stack_bytes,allocated_registers_per_block,predicted_resident_blocks,predicted_theoretical_occupancy_percent
 1,6f1b78d,sm_80,12.9.41,naive,256,30,0,0,0,8192,8,100.00
 1,6f1b78d,sm_80,12.9.41,tiled16,256,32,2048,0,0,8192,8,100.00
+1,1a67cf6,sm_80,12.9.41,microtile2x2,256,40,4096,0,0,10240,6,75.00
