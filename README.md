@@ -24,7 +24,7 @@ traffic implied by an actual kernel. Comparisons with profiler measurements will
 name the relevant cache or DRAM level. Occupancy is treated as a constraint and
 diagnostic—not as a target to maximize.
 
-## Current milestone: M2 — Shared-memory tiled GEMM
+## Current milestone: M5 — Hardware sensitivity analysis
 
 M0 established a trustworthy baseline:
 
@@ -48,6 +48,11 @@ milestones are maintained in
 [`docs/milestone-understanding.md`](docs/milestone-understanding.md).
 The gated execution plan through the final portfolio package is in
 [`docs/roadmap.md`](docs/roadmap.md).
+
+M3 correlated compiler resource usage, modeled occupancy, and profiler block
+limits. M4 then tested two frozen microtile hypotheses: balanced 2x2 reached
+8.997 TFLOP/s despite lower occupancy, while elongated 4x1 was 1.68% slower and
+served as a controlled losing contrast. The retained optimized kernel is 2x2.
 
 ## Repository layout
 

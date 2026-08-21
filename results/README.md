@@ -36,3 +36,7 @@ profiler evidence used to evaluate the frozen hypothesis.
 
 `m4_microtile4x1_predictions.csv` freezes a same-output-count shape contrast
 against the successful balanced 2x2 microtile.
+
+`microtile4x1_a100_80gb_baseline.csv` and
+`m4_microtile4x1_a100_80gb_2048_profile_summary.csv` record the controlled
+contrast that selected the balanced 2x2 microtile for later analysis.

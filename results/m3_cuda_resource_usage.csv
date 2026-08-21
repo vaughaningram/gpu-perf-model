@@ -2,3 +2,4 @@ schema_version,source_commit,gpu_architecture,cuda_compiler,kernel,threads_per_b
 1,6f1b78d,sm_80,12.9.41,naive,256,30,0,0,0,8192,8,100.00
 1,6f1b78d,sm_80,12.9.41,tiled16,256,32,2048,0,0,8192,8,100.00
 1,1a67cf6,sm_80,12.9.41,microtile2x2,256,40,4096,0,0,10240,6,75.00
+1,e348a0c,sm_80,12.9.41,microtile4x1,256,48,5120,0,0,12288,5,62.50

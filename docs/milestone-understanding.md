@@ -87,7 +87,7 @@ Be able to explain:
 - whether profiler evidence supports the causal explanation; and
 - why unsuccessful changes are useful evidence rather than results to hide.
 
-Checkpoint status: not started.
+Checkpoint status: two controlled experiments complete; owner explanation pending.
 
 ## M5 — Accelerator sensitivity analysis
 
