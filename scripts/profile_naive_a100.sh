@@ -19,8 +19,13 @@ case "${kernel}" in
         kernel_regex="gemm_tiled_kernel"
         benchmark_options=(--tiled)
         ;;
+    microtile2x2)
+        kernel_regex="gemm_microtile_2x2_kernel"
+        benchmark_options=(--microtile)
+        ;;
     *)
-        echo "Unsupported profile kernel: ${kernel} (expected naive or tiled16)" >&2
+        echo "Unsupported profile kernel: ${kernel}" >&2
+        echo "Expected naive, tiled16, or microtile2x2." >&2
         exit 1
         ;;
 esac

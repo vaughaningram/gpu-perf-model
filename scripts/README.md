@@ -56,3 +56,14 @@ GPU_PERF_NCU=/path/to/ncu ./scripts/profile_naive_a100.sh
 
 Select the M2 kernel with `GPU_PERF_PROFILE_KERNEL=tiled16`; the default remains
 `naive` so existing M1 commands retain their meaning.
+
+## Microtile tuning sweep
+
+Run the frozen M4 2x2 output-microtile experiment with:
+
+```bash
+bash scripts/run_microtile_sweep.sh | \
+    tee results/microtile2x2_a100_80gb_baseline.csv
+```
+
+For its focused profile, set `GPU_PERF_PROFILE_KERNEL=microtile2x2`.
