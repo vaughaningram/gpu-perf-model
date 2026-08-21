@@ -21,11 +21,24 @@ Architecture sources:
 - [NVIDIA Ampere Tuning Guide](https://docs.nvidia.com/cuda/ampere-tuning-guide/)
 - [CUDA compute-capability tables](https://docs.nvidia.com/cuda/cuda-programming-guide/05-appendices/compute-capabilities.html)
 
-## Initial correlation
+## Compiler resource evidence
 
-The initial model uses the profile-implied 32 registers per thread until the
-compiler report is collected directly. Both kernels launch 256 threads, or 8
-warps, per block.
+CUDA 12.9 `cuobjdump --dump-resource-usage` reports:
+
+| Kernel | Registers/thread | Static shared/block | Local memory | Stack |
+| --- | ---: | ---: | ---: | ---: |
+| Naive | 30 | 0 bytes | 0 | 0 |
+| Tiled16 | 32 | 2,048 bytes | 0 | 0 |
+
+Zero local memory and stack usage provide direct evidence that neither kernel
+spills registers. Both kernels launch 256 threads, or 8 warps, per block.
+
+The A100 allocates registers in per-warp units. Thirty registers per thread
+requires 960 registers/warp and rounds to 1,024; 32 registers per thread uses
+exactly 1,024. Both therefore allocate 8,192 registers/block and reach the same
+`floor(65,536 / 8,192) = 8` register block limit.
+
+## Model-to-profiler correlation
 
 | Limit in blocks/SM | Naive | Tiled16 | Nsight match |
 | --- | ---: | ---: | --- |
@@ -47,9 +60,7 @@ eligible warp in more than 40% of cycles. Residency supplies latency-hiding
 opportunity; dependencies and full instruction queues determine whether a warp
 is actually eligible.
 
-## Next evidence
-
-Collect compiler resource reports for both kernel entry points and replace the
-profile-implied register count with directly reported registers and spill
-information. The M3 gate is satisfied only when those compiler values and the
-Nsight block limits agree with the model.
+The compiler values, model predictions, and Nsight block limits now agree. The
+remaining M3 learning task is to explain why theoretical residency and achieved
+occupancy describe available warps, while eligible warps and issue-slot use
+describe whether dependencies and instruction queues allow those warps to run.

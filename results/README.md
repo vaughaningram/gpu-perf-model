@@ -23,3 +23,6 @@ GEMM predictions before its CUDA implementation or measurement.
 `tiled16_a100_80gb_baseline.csv` is the controlled M2 size sweep, and
 `m2_tiled16_a100_80gb_2048_profile_summary.csv` records the focused evidence
 used to explain its performance.
+
+`m3_cuda_resource_usage.csv` records compiler-reported registers, shared
+memory, local memory, and stack use alongside the resource-model prediction.

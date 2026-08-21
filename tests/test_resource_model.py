@@ -10,12 +10,13 @@ from model.resource_model import (
 
 class ResourceModelTests(unittest.TestCase):
     def test_naive_profile_limits_are_reproduced(self) -> None:
-        result = model_occupancy(KernelResources(256, 32, 0))
+        result = model_occupancy(KernelResources(256, 30, 0))
 
         self.assertEqual(result.block_limit_sm, 32)
         self.assertEqual(result.block_limit_threads, 8)
         self.assertEqual(result.block_limit_warps, 8)
         self.assertEqual(result.block_limit_registers, 8)
+        self.assertEqual(result.allocated_registers_per_block, 8192)
         self.assertEqual(result.block_limit_shared_memory, 64)
         self.assertEqual(result.resident_blocks, 8)
         self.assertEqual(result.resident_warps, 64)
