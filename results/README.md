@@ -33,3 +33,6 @@ prediction before implementation or measurement.
 `microtile2x2_a100_80gb_baseline.csv` is the controlled M4 sweep, and
 `m4_microtile2x2_a100_80gb_2048_profile_summary.csv` records the focused
 profiler evidence used to evaluate the frozen hypothesis.
+
+`m4_microtile4x1_predictions.csv` freezes a same-output-count shape contrast
+against the successful balanced 2x2 microtile.
