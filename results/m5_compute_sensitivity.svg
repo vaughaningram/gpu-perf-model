@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560">
+<rect width="100%" height="100%" fill="white"/>
+<text x="450.0" y="30" text-anchor="middle" font-family="sans-serif" font-size="20">Request-Roofline Sensitivity to FP32 Compute</text>
+<line x1="90" y1="60" x2="90" y2="480" stroke="#333"/>
+<line x1="90" y1="480" x2="870" y2="480" stroke="#333"/>
+<line x1="90" y1="480.0" x2="870" y2="480.0" stroke="#ddd"/>
+<text x="80" y="485.0" text-anchor="end" font-family="sans-serif" font-size="12">0</text>
+<line x1="90" y1="375.0" x2="870" y2="375.0" stroke="#ddd"/>
+<text x="80" y="380.0" text-anchor="end" font-family="sans-serif" font-size="12">5</text>
+<line x1="90" y1="270.0" x2="870" y2="270.0" stroke="#ddd"/>
+<text x="80" y="275.0" text-anchor="end" font-family="sans-serif" font-size="12">10</text>
+<line x1="90" y1="165.0" x2="870" y2="165.0" stroke="#ddd"/>
+<text x="80" y="170.0" text-anchor="end" font-family="sans-serif" font-size="12">15</text>
+<line x1="90" y1="60.0" x2="870" y2="60.0" stroke="#ddd"/>
+<text x="80" y="65.0" text-anchor="end" font-family="sans-serif" font-size="12">20</text>
+<text x="90.0" y="504" text-anchor="middle" font-family="sans-serif" font-size="12">0.25x</text>
+<text x="142.0" y="504" text-anchor="middle" font-family="sans-serif" font-size="12">0.5x</text>
+<text x="194.0" y="504" text-anchor="middle" font-family="sans-serif" font-size="12">0.75x</text>
+<text x="246.0" y="504" text-anchor="middle" font-family="sans-serif" font-size="12">1x</text>
+<text x="350.0" y="504" text-anchor="middle" font-family="sans-serif" font-size="12">1.5x</text>
+<text x="454.0" y="504" text-anchor="middle" font-family="sans-serif" font-size="12">2x</text>
+<text x="662.0" y="504" text-anchor="middle" font-family="sans-serif" font-size="12">3x</text>
+<text x="870.0" y="504" text-anchor="middle" font-family="sans-serif" font-size="12">4x</text>
+<text x="450.0" y="540" text-anchor="middle" font-family="sans-serif" font-size="14">FP32 throughput relative to A100</text>
+<text x="20" y="270.0" transform="rotate(-90 20 270.0)" text-anchor="middle" font-family="sans-serif" font-size="14">Performance (TFLOP/s)</text>
+<line x1="246.0" y1="60" x2="246.0" y2="480" stroke="#777" stroke-dasharray="5,5"/>
+<polyline points="90.0,469.8 142.0,469.8 194.0,469.8 246.0,469.8 350.0,469.8 454.0,469.8 662.0,469.8 870.0,469.8" fill="none" stroke="#4C78A8" stroke-width="3"/>
+<polygon points="246.0,410.5 252.0,416.5 246.0,422.5 240.0,416.5" fill="#4C78A8" stroke="black"/>
+<line x1="650" y1="75" x2="680" y2="75" stroke="#4C78A8" stroke-width="3"/>
+<text x="688" y="80" font-family="sans-serif" font-size="12">naive</text>
+<polyline points="90.0,377.6 142.0,318.1 194.0,318.1 246.0,318.1 350.0,318.1 454.0,318.1 662.0,318.1 870.0,318.1" fill="none" stroke="#F58518" stroke-width="3"/>
+<polygon points="246.0,376.6 252.0,382.6 246.0,388.6 240.0,382.6" fill="#F58518" stroke="black"/>
+<line x1="650" y1="97" x2="680" y2="97" stroke="#F58518" stroke-width="3"/>
+<text x="688" y="102" font-family="sans-serif" font-size="12">tiled16</text>
+<polyline points="90.0,377.6 142.0,275.2 194.0,172.9 246.0,157.4 350.0,157.4 454.0,157.4 662.0,157.4 870.0,157.4" fill="none" stroke="#54A24B" stroke-width="3"/>
+<polygon points="246.0,285.1 252.0,291.1 246.0,297.1 240.0,291.1" fill="#54A24B" stroke="black"/>
+<line x1="650" y1="119" x2="680" y2="119" stroke="#54A24B" stroke-width="3"/>
+<text x="688" y="124" font-family="sans-serif" font-size="12">microtile2x2</text>
+<polyline points="90.0,377.6 142.0,275.2 194.0,221.6 246.0,221.6 350.0,221.6 454.0,221.6 662.0,221.6 870.0,221.6" fill="none" stroke="#E45756" stroke-width="3"/>
+<polygon points="246.0,288.2 252.0,294.2 246.0,300.2 240.0,294.2" fill="#E45756" stroke="black"/>
+<line x1="650" y1="141" x2="680" y2="141" stroke="#E45756" stroke-width="3"/>
+<text x="688" y="146" font-family="sans-serif" font-size="12">microtile4x1</text>
+<text x="650" y="170" font-family="sans-serif" font-size="11">solid: request roofline</text>
+<text x="650" y="186" font-family="sans-serif" font-size="11">diamond: measured A100 at 1x</text>
+</svg>

@@ -24,7 +24,7 @@ traffic implied by an actual kernel. Comparisons with profiler measurements will
 name the relevant cache or DRAM level. Occupancy is treated as a constraint and
 diagnostic—not as a target to maximize.
 
-## Current milestone: M5 — Hardware sensitivity analysis
+## Current milestone: M7 — Model-to-hardware correlation
 
 M0 established a trustworthy baseline:
 
@@ -53,6 +53,9 @@ M3 correlated compiler resource usage, modeled occupancy, and profiler block
 limits. M4 then tested two frozen microtile hypotheses: balanced 2x2 reached
 8.997 TFLOP/s despite lower occupancy, while elongated 4x1 was 1.68% slower and
 served as a controlled losing contrast. The retained optimized kernel is 2x2.
+M5 completed compute, HBM-bandwidth, and register-file sensitivity studies.
+Optional M6 convolution is deferred so the GEMM correlation and final portfolio
+remain the priority.
 
 ## Repository layout
 

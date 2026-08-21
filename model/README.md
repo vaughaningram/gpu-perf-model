@@ -51,3 +51,9 @@ Run the equation tests with:
 ```bash
 python -m unittest tests.test_gemm_model
 ```
+
+Generate the M5 hardware sensitivity data and dependency-free SVG plots with:
+
+```bash
+python scripts/generate_sensitivity.py
+```

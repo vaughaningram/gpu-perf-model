@@ -101,7 +101,7 @@ Be able to explain:
 - why the analysis is a parameter study rather than a claim that a complete
   new accelerator has been designed.
 
-Checkpoint status: not started.
+Checkpoint status: parameter study and artifacts complete; owner explanation pending.
 
 ## M6 — Apply the method to 2D convolution
 
