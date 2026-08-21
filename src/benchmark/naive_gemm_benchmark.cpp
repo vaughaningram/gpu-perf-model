@@ -48,7 +48,7 @@ std::size_t parse_nonnegative_size(const char* text, const char* name) {
 void print_usage(const char* program) {
     std::cerr << "Usage: " << program
               << " [M K N [warmups measured_iterations]]"
-                 " [--tiled|--microtile] [--csv]\n";
+                 " [--tiled|--microtile|--microtile4x1] [--csv]\n";
 }
 
 std::string version_string(int encoded_version) {
@@ -99,6 +99,7 @@ int main(int argc, char** argv) {
         bool csv_output = false;
         bool tiled_kernel = false;
         bool microtile_kernel = false;
+        bool microtile_4x1_kernel = false;
         std::vector<std::string> values;
         for (int index = 1; index < argc; ++index) {
             const std::string argument = argv[index];
@@ -108,6 +109,8 @@ int main(int argc, char** argv) {
                 tiled_kernel = true;
             } else if (argument == "--microtile") {
                 microtile_kernel = true;
+            } else if (argument == "--microtile4x1") {
+                microtile_4x1_kernel = true;
             } else {
                 values.push_back(argument);
             }
@@ -117,9 +120,13 @@ int main(int argc, char** argv) {
             print_usage(argv[0]);
             return EXIT_FAILURE;
         }
-        if (tiled_kernel && microtile_kernel) {
+        const int selected_kernel_count =
+            static_cast<int>(tiled_kernel) +
+            static_cast<int>(microtile_kernel) +
+            static_cast<int>(microtile_4x1_kernel);
+        if (selected_kernel_count > 1) {
             throw std::invalid_argument(
-                "--tiled and --microtile are mutually exclusive");
+                "kernel selection options are mutually exclusive");
         }
 
         std::size_t m = 512;
@@ -142,7 +149,10 @@ int main(int argc, char** argv) {
         const auto a = gpu_perf::make_deterministic_matrix(m, k, 0xA341316CU);
         const auto b = gpu_perf::make_deterministic_matrix(k, n, 0xC8013EA4U);
 
-        const auto benchmark = microtile_kernel
+        const auto benchmark = microtile_4x1_kernel
+            ? gpu_perf::benchmark_cuda_microtile_4x1(
+                  a, b, warmups, measured_iterations)
+            : microtile_kernel
             ? gpu_perf::benchmark_cuda_microtile_2x2(
                   a, b, warmups, measured_iterations)
             : tiled_kernel
@@ -150,7 +160,9 @@ int main(int argc, char** argv) {
                       a, b, warmups, measured_iterations)
                 : gpu_perf::benchmark_cuda_naive(
                       a, b, warmups, measured_iterations);
-        const std::string kernel_name = microtile_kernel
+        const std::string kernel_name = microtile_4x1_kernel
+            ? "microtile4x1"
+            : microtile_kernel
             ? "microtile2x2"
             : tiled_kernel ? "tiled16" : "naive";
 

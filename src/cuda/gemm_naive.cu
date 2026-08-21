@@ -203,6 +203,60 @@ __global__ void gemm_microtile_2x2_kernel(
     }
 }
 
+__global__ void gemm_microtile_4x1_kernel(
+    const float* a,
+    const float* b,
+    float* c,
+    std::size_t m,
+    std::size_t k_dimension,
+    std::size_t n) {
+    __shared__ float a_tile[4 * tile_width][tile_width];
+    __shared__ float b_tile[tile_width][tile_width];
+
+    const std::size_t base_row = blockIdx.y * 4 * tile_width + threadIdx.y;
+    const std::size_t column = blockIdx.x * tile_width + threadIdx.x;
+    float accumulators[4] = {0.0F, 0.0F, 0.0F, 0.0F};
+
+    for (std::size_t tile_start = 0; tile_start < k_dimension;
+         tile_start += tile_width) {
+        const std::size_t a_column = tile_start + threadIdx.x;
+        const std::size_t b_row = tile_start + threadIdx.y;
+
+#pragma unroll
+        for (unsigned int output = 0; output < 4; ++output) {
+            const std::size_t row = base_row + output * tile_width;
+            a_tile[threadIdx.y + output * tile_width][threadIdx.x] =
+                row < m && a_column < k_dimension
+                    ? a[row * k_dimension + a_column]
+                    : 0.0F;
+        }
+        b_tile[threadIdx.y][threadIdx.x] =
+            b_row < k_dimension && column < n
+                ? b[b_row * n + column]
+                : 0.0F;
+        __syncthreads();
+
+#pragma unroll
+        for (unsigned int inner = 0; inner < tile_width; ++inner) {
+            const float b_value = b_tile[inner][threadIdx.x];
+#pragma unroll
+            for (unsigned int output = 0; output < 4; ++output) {
+                accumulators[output] +=
+                    a_tile[threadIdx.y + output * tile_width][inner] * b_value;
+            }
+        }
+        __syncthreads();
+    }
+
+#pragma unroll
+    for (unsigned int output = 0; output < 4; ++output) {
+        const std::size_t row = base_row + output * tile_width;
+        if (row < m && column < n) {
+            c[row * n + column] = accumulators[output];
+        }
+    }
+}
+
 void launch_naive_gemm(
     const float* device_a,
     const float* device_b,
@@ -255,6 +309,22 @@ void launch_microtile_2x2_gemm(
     gemm_microtile_2x2_kernel<<<grid, block>>>(
         device_a, device_b, device_c, m, k_dimension, n);
     require_cuda_success(cudaGetLastError(), "launch 2x2 microtile GEMM kernel");
+}
+
+void launch_microtile_4x1_gemm(
+    const float* device_a,
+    const float* device_b,
+    float* device_c,
+    std::size_t m,
+    std::size_t k_dimension,
+    std::size_t n) {
+    const dim3 block(tile_width, tile_width);
+    const dim3 grid(
+        static_cast<unsigned int>((n + tile_width - 1) / tile_width),
+        static_cast<unsigned int>((m + 4 * tile_width - 1) / (4 * tile_width)));
+    gemm_microtile_4x1_kernel<<<grid, block>>>(
+        device_a, device_b, device_c, m, k_dimension, n);
+    require_cuda_success(cudaGetLastError(), "launch 4x1 microtile GEMM kernel");
 }
 
 void copy_inputs_to_device(
@@ -439,6 +509,27 @@ Matrix gemm_cuda_microtile_2x2(const Matrix& a, const Matrix& b) {
     return c;
 }
 
+Matrix gemm_cuda_microtile_4x1(const Matrix& a, const Matrix& b) {
+    if (a.columns() != b.rows()) {
+        throw std::invalid_argument("GEMM inner dimensions must match");
+    }
+    Matrix c(a.rows(), b.columns());
+    if (c.size() == 0 || a.columns() == 0) {
+        return c;
+    }
+    DeviceBuffer device_a(a.size());
+    DeviceBuffer device_b(b.size());
+    DeviceBuffer device_c(c.size());
+    copy_inputs_to_device(a, b, device_a, device_b);
+    launch_microtile_4x1_gemm(
+        device_a.data(), device_b.data(), device_c.data(),
+        a.rows(), a.columns(), b.columns());
+    require_cuda_success(
+        cudaDeviceSynchronize(), "execute 4x1 microtile GEMM kernel");
+    copy_output_to_host(c, device_c);
+    return c;
+}
+
 CudaDeviceMetadata current_cuda_device_metadata() {
     int device = 0;
     require_cuda_success(cudaGetDevice(&device), "cudaGetDevice");
@@ -489,6 +580,16 @@ CudaGemmBenchmarkResult benchmark_cuda_microtile_2x2(
     return benchmark_cuda(
         a, b, warmup_iterations, measured_iterations,
         launch_microtile_2x2_gemm);
+}
+
+CudaGemmBenchmarkResult benchmark_cuda_microtile_4x1(
+    const Matrix& a,
+    const Matrix& b,
+    std::size_t warmup_iterations,
+    std::size_t measured_iterations) {
+    return benchmark_cuda(
+        a, b, warmup_iterations, measured_iterations,
+        launch_microtile_4x1_gemm);
 }
 
 }  // namespace gpu_perf

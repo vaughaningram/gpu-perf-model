@@ -18,6 +18,7 @@ namespace gpu_perf {
 // Computes a 32x32 output tile with a 16x16 thread block. Each thread owns a
 // 2x2 output microtile and four independent accumulators.
 [[nodiscard]] Matrix gemm_cuda_microtile_2x2(const Matrix& a, const Matrix& b);
+[[nodiscard]] Matrix gemm_cuda_microtile_4x1(const Matrix& a, const Matrix& b);
 
 struct CudaGemmBenchmarkResult {
     Matrix output;
@@ -55,6 +56,12 @@ struct CudaDeviceMetadata {
     std::size_t measured_iterations);
 
 [[nodiscard]] CudaGemmBenchmarkResult benchmark_cuda_microtile_2x2(
+    const Matrix& a,
+    const Matrix& b,
+    std::size_t warmup_iterations,
+    std::size_t measured_iterations);
+
+[[nodiscard]] CudaGemmBenchmarkResult benchmark_cuda_microtile_4x1(
     const Matrix& a,
     const Matrix& b,
     std::size_t warmup_iterations,
