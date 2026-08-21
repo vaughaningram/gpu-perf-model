@@ -43,3 +43,6 @@ contrast that selected the balanced 2x2 microtile for later analysis.
 
 The `m5_*_sensitivity.csv` and `.svg` artifacts record the reproducible
 compute, HBM-bandwidth, and register-file parameter study.
+
+The `m7_*` CSV and SVG artifacts join frozen predictions to later measurements
+and visualize correlation, measured progression, and model error.

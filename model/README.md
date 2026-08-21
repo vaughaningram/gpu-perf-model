@@ -57,3 +57,9 @@ Generate the M5 hardware sensitivity data and dependency-free SVG plots with:
 ```bash
 python scripts/generate_sensitivity.py
 ```
+
+Generate the M7 prediction-versus-measurement correlation dataset and plots:
+
+```bash
+python scripts/generate_correlation.py
+```

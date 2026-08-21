@@ -1,0 +1,21 @@
+kernel,m,k,n,request_ai,traffic_definition,predicted_gflops,predicted_limit,measured_gflops,signed_error_gflops,absolute_error_gflops,absolute_relative_error_percent,measured_over_predicted,measured_fp32_peak_percent,measured_speedup_vs_naive,profile_diagnosis_at_2048
+naive,128,128,128,0.249027,source scalar requests,481.867704,bandwidth,433.439149,-48.428555,48.428555,11.173092,0.899498,2.222765,1.000000,L1TEX/global-load dependencies
+naive,256,256,256,0.249513,source scalar requests,482.807018,bandwidth,1689.072290,1206.265272,1206.265272,71.415846,3.498442,8.661909,1.000000,L1TEX/global-load dependencies
+naive,512,512,512,0.249756,source scalar requests,483.278049,bandwidth,2580.157420,2096.879371,2096.879371,81.269436,5.338867,13.231577,1.000000,L1TEX/global-load dependencies
+naive,1024,1024,1024,0.249878,source scalar requests,483.513909,bandwidth,2995.931286,2512.417377,2512.417377,83.860981,6.196164,15.363750,1.000000,L1TEX/global-load dependencies
+naive,2048,2048,2048,0.249939,source scalar requests,483.631926,bandwidth,3025.102135,2541.470209,2541.470209,84.012708,6.254968,15.513344,1.000000,L1TEX/global-load dependencies
+tiled16,128,128,128,3.764706,tiled global requests,7284.705882,bandwidth,611.343276,-6673.362606,6673.362606,1091.590088,0.083921,3.135094,1.410448,shared-memory/MIO issue
+tiled16,256,256,256,3.878788,tiled global requests,7505.454545,bandwidth,2229.115636,-5276.338909,5276.338909,236.700996,0.296999,11.431362,1.319728,shared-memory/MIO issue
+tiled16,512,512,512,3.938462,tiled global requests,7620.923077,bandwidth,3915.519016,-3705.404061,3705.404061,94.633790,0.513785,20.079585,1.517550,shared-memory/MIO issue
+tiled16,1024,1024,1024,3.968992,tiled global requests,7680.000000,bandwidth,4531.932704,-3148.067296,3148.067296,69.464123,0.590095,23.240681,1.512696,shared-memory/MIO issue
+tiled16,2048,2048,2048,3.984436,tiled global requests,7709.883268,bandwidth,4638.113320,-3071.769948,3071.769948,66.228868,0.601580,23.785197,1.533209,shared-memory/MIO issue
+microtile2x2,128,128,128,7.111111,microtile global requests,13760.000000,bandwidth,487.619030,-13272.380970,13272.380970,2721.875102,0.035437,2.500610,1.125000,on-chip instruction/issue balance
+microtile2x2,256,256,256,7.529412,microtile global requests,14569.411765,bandwidth,2348.960605,-12220.451160,12220.451160,520.249302,0.161225,12.045952,1.390681,on-chip instruction/issue balance
+microtile2x2,512,512,512,7.757576,microtile global requests,15010.909091,bandwidth,5864.519226,-9146.389865,9146.389865,155.961461,0.390684,30.074458,2.272931,on-chip instruction/issue balance
+microtile2x2,1024,1024,1024,7.876923,microtile global requests,15241.846154,bandwidth,8280.955332,-6960.890822,6960.890822,84.059031,0.543304,42.466438,2.764067,on-chip instruction/issue balance
+microtile2x2,2048,2048,2048,7.937984,microtile global requests,15360.000000,bandwidth,8997.032608,-6362.967392,6362.967392,70.722956,0.585744,46.138629,2.974125,on-chip instruction/issue balance
+microtile4x1,128,128,128,5.818182,microtile global requests,11258.181818,bandwidth,505.679023,-10752.502795,10752.502795,2126.349385,0.044917,2.593226,1.166667,extra instructions/weaker balanced reuse
+microtile4x1,256,256,256,6.095238,microtile global requests,11794.285714,bandwidth,2374.492670,-9419.793044,9419.793044,396.707607,0.201326,12.176885,1.405797,extra instructions/weaker balanced reuse
+microtile4x1,512,512,512,6.243902,microtile global requests,12081.951220,bandwidth,5793.237238,-6288.713982,6288.713982,108.552675,0.479495,29.708909,2.245304,extra instructions/weaker balanced reuse
+microtile4x1,1024,1024,1024,6.320988,microtile global requests,12231.111111,bandwidth,8200.007902,-4031.103209,4031.103209,49.159748,0.670422,42.051323,2.737048,extra instructions/weaker balanced reuse
+microtile4x1,2048,2048,2048,6.360248,microtile global requests,12307.080745,bandwidth,8845.943238,-3461.137507,3461.137507,39.126834,0.718769,45.363811,2.924180,extra instructions/weaker balanced reuse

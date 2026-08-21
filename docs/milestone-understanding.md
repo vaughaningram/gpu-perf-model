@@ -126,7 +126,7 @@ Be able to explain:
 - the difference between fitting past measurements and making a useful
   prediction before measurement.
 
-Checkpoint status: not started.
+Checkpoint status: synthesis dataset and plots complete; owner explanation pending.
 
 ## M8 — Documentation and portfolio presentation
 

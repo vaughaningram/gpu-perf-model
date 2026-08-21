@@ -24,7 +24,7 @@ traffic implied by an actual kernel. Comparisons with profiler measurements will
 name the relevant cache or DRAM level. Occupancy is treated as a constraint and
 diagnostic—not as a target to maximize.
 
-## Current milestone: M7 — Model-to-hardware correlation
+## Current milestone: M8 — Final portfolio package
 
 M0 established a trustworthy baseline:
 
