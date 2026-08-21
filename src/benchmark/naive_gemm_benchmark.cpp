@@ -47,7 +47,8 @@ std::size_t parse_nonnegative_size(const char* text, const char* name) {
 
 void print_usage(const char* program) {
     std::cerr << "Usage: " << program
-              << " [M K N [warmups measured_iterations]] [--tiled] [--csv]\n";
+              << " [M K N [warmups measured_iterations]]"
+                 " [--tiled|--microtile] [--csv]\n";
 }
 
 std::string version_string(int encoded_version) {
@@ -97,6 +98,7 @@ int main(int argc, char** argv) {
     try {
         bool csv_output = false;
         bool tiled_kernel = false;
+        bool microtile_kernel = false;
         std::vector<std::string> values;
         for (int index = 1; index < argc; ++index) {
             const std::string argument = argv[index];
@@ -104,6 +106,8 @@ int main(int argc, char** argv) {
                 csv_output = true;
             } else if (argument == "--tiled") {
                 tiled_kernel = true;
+            } else if (argument == "--microtile") {
+                microtile_kernel = true;
             } else {
                 values.push_back(argument);
             }
@@ -112,6 +116,10 @@ int main(int argc, char** argv) {
         if (!values.empty() && values.size() != 3 && values.size() != 5) {
             print_usage(argv[0]);
             return EXIT_FAILURE;
+        }
+        if (tiled_kernel && microtile_kernel) {
+            throw std::invalid_argument(
+                "--tiled and --microtile are mutually exclusive");
         }
 
         std::size_t m = 512;
@@ -134,10 +142,17 @@ int main(int argc, char** argv) {
         const auto a = gpu_perf::make_deterministic_matrix(m, k, 0xA341316CU);
         const auto b = gpu_perf::make_deterministic_matrix(k, n, 0xC8013EA4U);
 
-        const auto benchmark = tiled_kernel
-            ? gpu_perf::benchmark_cuda_tiled(a, b, warmups, measured_iterations)
-            : gpu_perf::benchmark_cuda_naive(a, b, warmups, measured_iterations);
-        const std::string kernel_name = tiled_kernel ? "tiled16" : "naive";
+        const auto benchmark = microtile_kernel
+            ? gpu_perf::benchmark_cuda_microtile_2x2(
+                  a, b, warmups, measured_iterations)
+            : tiled_kernel
+                ? gpu_perf::benchmark_cuda_tiled(
+                      a, b, warmups, measured_iterations)
+                : gpu_perf::benchmark_cuda_naive(
+                      a, b, warmups, measured_iterations);
+        const std::string kernel_name = microtile_kernel
+            ? "microtile2x2"
+            : tiled_kernel ? "tiled16" : "naive";
 
         // Correctness work occurs after the timed GPU region.
         const auto expected = gpu_perf::gemm_cpu_reference(a, b);
